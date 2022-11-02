@@ -28,4 +28,16 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python geo_pipeline_script.py --namespace test --tag test2 --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python geo_pipeline_script.py --namespace test --tag test2 --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} > upload_logs/upload_${{ steps.date.outputs.date }}.log
+
+      - name: setup git config
+        run: |
+          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          
+      - name: commit
+        run: |
+          git add upload_logs/upload_${{ steps.date.outputs.date }}.log
+          git commit -m "new date commit"
+          git push origin main
