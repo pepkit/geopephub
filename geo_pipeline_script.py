@@ -3,6 +3,7 @@ import pepdbagent
 import argparse
 import sys
 from typing import NoReturn
+import datetime
 
 
 def upload_geo_projects(
@@ -26,6 +27,8 @@ def upload_geo_projects(
     :return: NoReturn
     """
     # pep_db_connection = pepdbagent.Connection(host=host, port=port, database=db, user=user, password=password)
+    now = datetime.datetime.now()
+    print(now)
 
     print(host, port, db, user, password)
 
