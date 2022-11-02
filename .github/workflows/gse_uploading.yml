@@ -28,7 +28,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python geo_pipeline_script.py --namespace test --tag test2 --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} > upload_logs/upload_${{ steps.date.outputs.date }}.log
+        run: python geo_pipeline_script.py --namespace test --tag test2 --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} > upload_logs/upload_"${{ steps.current-time.outputs.formattedTime }}".log
 
       - name: setup git config
         run: |
