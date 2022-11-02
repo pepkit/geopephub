@@ -37,8 +37,7 @@ jobs:
           git config user.email "<>"
           
       - name: commit
-        uses: actions/create-release@latest
         run: |
-          git add upload_logs/upload_${{ steps.date.outputs.date }}.log
+          git add -A
           git commit -m "new date commit"
           git push origin main
