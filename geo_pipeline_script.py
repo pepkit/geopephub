@@ -26,11 +26,11 @@ def upload_geo_projects(
     :param port: port of the database
     :return: NoReturn
     """
-    # pep_db_connection = pepdbagent.Connection(host=host, port=port, database=db, user=user, password=password)
+    pep_db_connection = pepdbagent.Connection(host=host, port=port, database=db, user=user, password=password)
     now = datetime.datetime.now()
     print(now)
 
-    print(host, port, db, user, password)
+    # print(host, port, db, user, password)
 
     ff = Finder(retmax=2).get_gse_by_day_count(2)
 
@@ -40,7 +40,7 @@ def upload_geo_projects(
         print("project has been downloaded")
         for prj_name in project_dict:
             print(f"project_name = {prj_name}")
-            # pep_db_connection.upload_project(project=project_dict[prj_name], namespace=namespace, name=prj_name, tag=tag)
+            pep_db_connection.upload_project(project=project_dict[prj_name], namespace=namespace, name=prj_name, tag=tag)
 
 
 def _parse_cmdl(cmdl):

@@ -2,7 +2,8 @@ name: Upload project
 
 on:
   schedule:
-    - cron: '* * * * *'
+    # run every monday at 00:05
+    - cron: '5 0 * * MON'
   workflow_dispatch:
     inputs: null
 
