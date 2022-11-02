@@ -34,7 +34,7 @@ def upload_geo_projects(
 
     # print(host, port, db, user, password)
 
-    gse_list = Finder(retmax=2).get_gse_by_day_count(2)
+    gse_list = Finder().get_gse_by_day_count(2)
     geofetcher_obj = Geofetcher()
 
     print(f"Number of projects that will be processed: {len(gse_list)}")

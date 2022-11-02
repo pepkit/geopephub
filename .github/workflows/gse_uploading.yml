@@ -3,7 +3,7 @@ name: Upload project
 on:
   schedule:
     # run every monday at 00:05
-    - cron: '5 0 * * MON'
+    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs: null
 
@@ -28,16 +28,16 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python geo_pipeline_script.py --namespace test --tag test2 --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} > upload_logs/upload_"${{ steps.current-time.outputs.formattedTime }}".log
+        run: python geo_pipeline_script.py --namespace test --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
 
-      - name: setup git config
-        run: |
-          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-          
-      - name: commit
-        run: |
-          git add -A
-          git commit -m "new date commit"
-          git push origin main
+#      - name: setup git config
+#        run: |
+#          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+#          git config user.name "GitHub Actions Bot"
+#          git config user.email "<>"
+#
+#      - name: commit
+#        run: |
+#          git add -A
+#          git commit -m "new date commit"
+#          git push origin main
