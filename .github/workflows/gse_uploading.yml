@@ -2,7 +2,7 @@ name: Upload project
 
 on:
   schedule:
-    - cron: '45 21 * * 2'
+    - cron: '50 21 * * 2'
     - cron: '00 22 * * 2'
 
 
