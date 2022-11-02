@@ -2,9 +2,7 @@ name: Upload project
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
-  push:
-    branches: [ main ]
+    - cron: '* * * * *'
 
 
 jobs:
