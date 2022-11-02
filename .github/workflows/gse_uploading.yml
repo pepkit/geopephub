@@ -3,6 +3,8 @@ name: Upload project
 on:
   schedule:
     - cron: '* * * * *'
+  workflow_dispatch:
+    inputs: null
 
 
 jobs:
@@ -25,4 +27,4 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python geo_pipeline_script.py --namespace test --tag test2 --host xxx --db xxx --user xxx --password xxx
+        run: python geo_pipeline_script.py --namespace test --tag test2 --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
