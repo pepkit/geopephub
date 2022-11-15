@@ -39,29 +39,29 @@ def upload_geo_projects(
 
     print(f"Number of projects that will be processed: {len(gse_list)}")
     for gse in gse_list:
-        try:
-            print(f"Processing GSE: {gse}")
-            project_dict = geofetcher_obj.get_projects(gse)
-            print(f"Project has been downloaded")
-            for prj_name in project_dict:
-                prj_name_list = prj_name.split("_")
-                pep_name = prj_name_list[0]
-                pep_tag = prj_name_list[1]
+        # try:
+        print(f"Processing GSE: {gse}")
+        project_dict = geofetcher_obj.get_projects(gse)
+        print(f"Project has been downloaded")
+        for prj_name in project_dict:
+            prj_name_list = prj_name.split("_")
+            pep_name = prj_name_list[0]
+            pep_tag = prj_name_list[1]
 
-                print(
-                    f"Namespace = {namespace} ; Project_name = {pep_name} ; Tag = {pep_tag}"
-                )
-                pep_db_connection.upload_project(
-                    project=project_dict[prj_name],
-                    namespace=namespace,
-                    name=pep_name,
-                    tag=pep_tag,
-                )
-        except Exception as err:
-            print(f"===============================")
-            print(f"Error whiled downloading: {gse}")
-            print(f"Error message: {err}")
-            print(f"===============================")
+            print(
+                f"Namespace = {namespace} ; Project_name = {pep_name} ; Tag = {pep_tag}"
+            )
+            pep_db_connection.upload_project(
+                project=project_dict[prj_name],
+                namespace=namespace,
+                name=pep_name,
+                tag=pep_tag,
+            )
+        # except Exception as err:
+        #     print(f"===============================")
+        #     print(f"Error whiled downloading: {gse}")
+        #     print(f"Error message: {err}")
+        #     print(f"===============================")
 
 
 
