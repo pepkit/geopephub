@@ -1,4 +1,4 @@
-from geofetch import Geofetcher, Finder
+import geofetch
 import pepdbagent
 import argparse
 import sys
@@ -6,6 +6,8 @@ from typing import NoReturn, Dict, List
 import datetime
 import logmuse
 import coloredlogs
+
+import peppy
 
 
 _LOGGER = logmuse.init_logger("geo_to_pephub")
@@ -39,12 +41,16 @@ def upload_geo_projects(
         host=host, port=port, database=db, user=user, password=password
     )
     time_now = datetime.datetime.now()
+
     _LOGGER.info(f"Time now: {time_now}")
+    _LOGGER.info(f"geofetch version: {geofetch.__version__}")
+    _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
+    _LOGGER.info(f"peppy version: {peppy.__version__}")
 
     # print(host, port, db, user, password)
 
-    gse_list = Finder().get_gse_by_day_count(2)
-    geofetcher_obj = Geofetcher()
+    gse_list = geofetch.Finder().get_gse_by_day_count(2)
+    geofetcher_obj = geofetch.Geofetcher()
 
     total_nb = len(gse_list)
     process_nb = 0
