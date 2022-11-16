@@ -59,7 +59,7 @@ def upload_geo_projects(
     _LOGGER.info(f"Number of projects that will be processed: {total_nb}")
     for gse in gse_list:
         process_nb += 1
-        _LOGGER.info(f"Processing GSE: {gse}. {process_nb}/{total_nb}")
+        _LOGGER.info(f"\033[0;33mProcessing GSE: {gse}. {process_nb}/{total_nb}\033[0m")
 
         project_dict = geofetcher_obj.get_projects(gse)
         _LOGGER.info(f"Project has been downloaded using geofetch")
@@ -85,19 +85,17 @@ def upload_geo_projects(
                     "gse_acc": gse,
                     "status": "failure",
                 })
-                print(gse)
+                _LOGGER.info(f"{gse} was not uploaded, reason: {upload_return}")
             # else:
             #     info_list.append({
             #         "gse_acc": gse,
             #         "status": "success",
             #     })
-
         # except Exception as err:
         #     print(f"===============================")
         #     print(f"Error whiled downloading: {gse}")
         #     print(f"Error message: {err}")
         #     print(f"===============================")
-
 
 # def write_log_file(info_list: List[Dict], file: str) -> NoReturn:
 #     """
