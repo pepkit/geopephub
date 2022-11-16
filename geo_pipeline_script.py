@@ -2,9 +2,18 @@ from geofetch import Geofetcher, Finder
 import pepdbagent
 import argparse
 import sys
-from typing import NoReturn
+from typing import NoReturn, Dict, List
 import datetime
+import logmuse
+import coloredlogs
 
+
+_LOGGER = logmuse.init_logger("geo_to_pephub")
+coloredlogs.install(
+    logger=_LOGGER,
+    datefmt="%H:%M:%S",
+    fmt="[%(levelname)s] [%(asctime)s] %(message)s",
+)
 
 def upload_geo_projects(
     namespace: str,
@@ -29,34 +38,54 @@ def upload_geo_projects(
     pep_db_connection = pepdbagent.Connection(
         host=host, port=port, database=db, user=user, password=password
     )
-    now = datetime.datetime.now()
-    print(now)
+    time_now = datetime.datetime.now()
+    _LOGGER.info(f"Time now: {time_now}")
 
     # print(host, port, db, user, password)
 
     gse_list = Finder().get_gse_by_day_count(2)
     geofetcher_obj = Geofetcher()
 
-    print(f"Number of projects that will be processed: {len(gse_list)}")
+    total_nb = len(gse_list)
+    process_nb = 0
+    info_list = []
+
+    _LOGGER.info(f"Number of projects that will be processed: {total_nb}")
     for gse in gse_list:
-        # try:
-        print(f"Processing GSE: {gse}")
+        process_nb += 1
+        _LOGGER.info(f"Processing GSE: {gse}. {process_nb}/{total_nb}")
+
         project_dict = geofetcher_obj.get_projects(gse)
-        print(f"Project has been downloaded")
+        _LOGGER.info(f"Project has been downloaded using geofetch")
+
         for prj_name in project_dict:
             prj_name_list = prj_name.split("_")
             pep_name = prj_name_list[0]
             pep_tag = prj_name_list[1]
 
-            print(
+            _LOGGER.info(
                 f"Namespace = {namespace} ; Project_name = {pep_name} ; Tag = {pep_tag}"
             )
-            pep_db_connection.upload_project(
+
+            upload_return = pep_db_connection.upload_project(
                 project=project_dict[prj_name],
                 namespace=namespace,
                 name=pep_name,
                 tag=pep_tag,
             )
+
+            if isinstance(upload_return, str):
+                info_list.append({
+                    "gse_acc": gse,
+                    "status": "failure",
+                })
+                print(gse)
+            # else:
+            #     info_list.append({
+            #         "gse_acc": gse,
+            #         "status": "success",
+            #     })
+
         # except Exception as err:
         #     print(f"===============================")
         #     print(f"Error whiled downloading: {gse}")
@@ -64,8 +93,7 @@ def upload_geo_projects(
         #     print(f"===============================")
 
 
-
-# def write_log_file(info_list: list, file: str) -> NoReturn:
+# def write_log_file(info_list: List[Dict], file: str) -> NoReturn:
 #     """
 #     Write a log file with information about uploaded files
 #     :param info_list: list of information that has to be added to the file
