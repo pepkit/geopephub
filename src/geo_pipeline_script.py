@@ -128,14 +128,14 @@ def upload_geo_projects(
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
 
 
-upload_geo_projects(
-    namespace="new",
-    tag="def",
-    db="pep-db",
-    host="localhost",
-    user="postgres",
-    password="docker",
-)
+# upload_geo_projects(
+#     namespace="new",
+#     tag="def",
+#     db="pep-db",
+#     host="localhost",
+#     user="postgres",
+#     password="docker",
+# )
 
 
 def _parse_cmdl(cmdl):
