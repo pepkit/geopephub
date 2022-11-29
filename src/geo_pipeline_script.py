@@ -6,6 +6,8 @@ from typing import NoReturn, Dict, List
 import datetime
 import logmuse
 import coloredlogs
+from log_uploader import UploadLogger
+from models import LogModel
 
 import peppy
 
@@ -17,6 +19,7 @@ coloredlogs.install(
     fmt="[%(levelname)s] [%(asctime)s] %(message)s",
 )
 
+
 def upload_geo_projects(
     namespace: str,
     db: str,
@@ -25,6 +28,7 @@ def upload_geo_projects(
     password: str,
     port: int = 5432,
     tag: str = None,
+    overwrite: bool = True,
 ) -> NoReturn:
     """
 
@@ -35,11 +39,17 @@ def upload_geo_projects(
     :param user: Username
     :param password: Password
     :param port: port of the database
+    :param overwrite: update project in PEPhub if it already exists
     :return: NoReturn
     """
+
     pep_db_connection = pepdbagent.Connection(
         host=host, port=port, database=db, user=user, password=password
     )
+    log_connection = UploadLogger(
+        host=host, port=port, database=db, user=user, password=password
+    )
+
     time_now = datetime.datetime.now()
 
     _LOGGER.info(f"Time now: {time_now}")
@@ -54,20 +64,46 @@ def upload_geo_projects(
 
     total_nb = len(gse_list)
     process_nb = 0
-    info_list = []
 
     _LOGGER.info(f"Number of projects that will be processed: {total_nb}")
+
+    status_dict = {
+        "total": total_nb,
+        "success": 0,
+        "failure": 0,
+        "warning": 0,
+    }
+
+    log_model_dict = {}
+
     for gse in gse_list:
+        model_l = LogModel(gse=gse, log_stage=0, status="queued")
+        model_l = log_connection.upload_log(model_l)
+        log_model_dict[gse] = model_l
+
+    for gse in log_model_dict.keys():
+
+        gse_log = log_model_dict[gse]
+
+        gse_log.status = "processing"
+        gse_log.log_stage = 1
+        log_connection.upload_log(gse_log)
+
         process_nb += 1
         _LOGGER.info(f"\033[0;33mProcessing GSE: {gse}. {process_nb}/{total_nb}\033[0m")
 
         project_dict = geofetcher_obj.get_projects(gse)
         _LOGGER.info(f"Project has been downloaded using geofetch")
 
+        gse_log.log_stage = 2
+
         for prj_name in project_dict:
             prj_name_list = prj_name.split("_")
             pep_name = prj_name_list[0]
             pep_tag = prj_name_list[1]
+
+            gse_log.registry_path = f"{namespace}/{pep_name}:{pep_tag}"
+            log_connection.upload_log(gse_log)
 
             _LOGGER.info(
                 f"Namespace = {namespace} ; Project_name = {pep_name} ; Tag = {pep_tag}"
@@ -78,35 +114,28 @@ def upload_geo_projects(
                 namespace=namespace,
                 name=pep_name,
                 tag=pep_tag,
+                overwrite=overwrite,
             )
+            gse_log.log_stage = 3
+            gse_log.status = upload_return.status
+            gse_log.status_info = upload_return.log_stage
+            gse_log.info = upload_return.info
+            log_connection.upload_log(gse_log)
 
-            if isinstance(upload_return, str):
-                info_list.append({
-                    "gse_acc": gse,
-                    "status": "failure",
-                })
-                _LOGGER.info(f"{gse} was not uploaded, reason: {upload_return}")
-            # else:
-            #     info_list.append({
-            #         "gse_acc": gse,
-            #         "status": "success",
-            #     })
-        # except Exception as err:
-        #     print(f"===============================")
-        #     print(f"Error whiled downloading: {gse}")
-        #     print(f"Error message: {err}")
-        #     print(f"===============================")
+            status_dict[upload_return.status] += 1
 
-# def write_log_file(info_list: List[Dict], file: str) -> NoReturn:
-#     """
-#     Write a log file with information about uploaded files
-#     :param info_list: list of information that has to be added to the file
-#     :param file: path to the file
-#     :return: NoReturn
-#
-#     """
-#     with open(file, 'w+') as f:
-#         f.writelines(info_list)
+    _LOGGER.info(f"================== Finished ==================")
+    _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
+
+
+# upload_geo_projects(
+#     namespace="new",
+#     tag="def",
+#     db="pep-db",
+#     host="localhost",
+#     user="postgres",
+#     password="docker",
+# )
 
 
 def _parse_cmdl(cmdl):

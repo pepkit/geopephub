@@ -1,9 +1,6 @@
-name: Upload project
+name: Create Log table
 
 on:
-  schedule:
-    # run every monday at 00:05
-    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs: null
 
@@ -28,4 +25,4 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python src/geo_pipeline_script.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python src/create_log_table.py --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
