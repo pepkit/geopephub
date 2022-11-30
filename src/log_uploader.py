@@ -67,7 +67,7 @@ class UploadLogger:
         :return:
         """
         with Session(self.engine) as session:
-            _LOGGER.info("Getting queued projects")
+            _LOGGER.info("Uploading or updating project logs")
             statement = select(LogModel).where(LogModel.status == "queued")
             results = session.exec(statement)
             heroes = results.all()

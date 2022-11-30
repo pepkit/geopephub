@@ -98,7 +98,7 @@ def upload_geo_projects(
             _LOGGER.info(f"Project has been downloaded using geofetch")
         except Exception as err:
             gse_log.status = "failure"
-            gse_log.info = err
+            gse_log.info = str(err)
             gse_log.status_info = "geofetcher"
             log_connection.upload_log(gse_log)
             continue
