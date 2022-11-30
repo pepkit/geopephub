@@ -1,8 +1,9 @@
-name: Create Log table
+name: Upload queued project
 
 on:
   workflow_dispatch:
     inputs: null
+
 
 jobs:
   build:
@@ -24,4 +25,4 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python src/create_log_table.py --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python src/run_queued.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
