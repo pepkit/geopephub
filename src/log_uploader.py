@@ -1,6 +1,7 @@
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import SQLModel, create_engine, Session, select
 from models import LogModel
 import datetime
+from typing import List
 
 import logmuse
 import coloredlogs
@@ -59,3 +60,15 @@ class UploadLogger:
             session.refresh(response)
         _LOGGER.info("Information was uploaded")
         return response
+
+    def get_queued_project(self) -> List[LogModel]:
+        """
+        blabla
+        :return:
+        """
+        with Session(self.engine) as session:
+            _LOGGER.info("Uploading or updating project logs")
+            statement = select(LogModel).where(LogModel.status == "queued")
+            results = session.exec(statement)
+            heroes = results.all()
+            return heroes

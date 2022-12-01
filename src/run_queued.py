@@ -1,3 +1,10 @@
+# 1. Get project that is queued
+# 2. Get GSE
+# 3. Run uploader
+# 4. update log
+# 5. do with every
+
+
 import geofetch
 import pepdbagent
 import argparse
@@ -12,7 +19,7 @@ from models import LogModel
 import peppy
 
 
-_LOGGER = logmuse.init_logger("geo_to_pephub")
+_LOGGER = logmuse.init_logger("run_queued")
 coloredlogs.install(
     logger=_LOGGER,
     datefmt="%H:%M:%S",
@@ -20,7 +27,7 @@ coloredlogs.install(
 )
 
 
-def upload_geo_projects(
+def upload_queued_projects(
     namespace: str,
     db: str,
     host: str,
@@ -30,18 +37,6 @@ def upload_geo_projects(
     tag: str = None,
     overwrite: bool = True,
 ) -> NoReturn:
-    """
-
-    :param namespace: Namespace of the projects
-    :param tag: Tag of the projects
-    :param db: db name of the db
-    :param host: host of the db
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
-    :param overwrite: update project in PEPhub if it already exists
-    :return: NoReturn
-    """
 
     pep_db_connection = pepdbagent.Connection(
         host=host, port=port, database=db, user=user, password=password
@@ -57,12 +52,8 @@ def upload_geo_projects(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
-    # print(host, port, db, user, password)
-
-    gse_list = geofetch.Finder().get_gse_by_day_count(2)
-    geofetcher_obj = geofetch.Geofetcher()
-
-    total_nb = len(gse_list)
+    gse_log_list = log_connection.get_queued_project()
+    total_nb = len(gse_log_list)
     process_nb = 0
 
     _LOGGER.info(f"Number of projects that will be processed: {total_nb}")
@@ -76,10 +67,11 @@ def upload_geo_projects(
 
     log_model_dict = {}
 
-    for gse in gse_list:
-        model_l = LogModel(gse=gse, log_stage=0, status="queued")
-        model_l = log_connection.upload_log(model_l)
-        log_model_dict[gse] = model_l
+    for gse_log_item in gse_log_list:
+
+        log_model_dict[gse_log_item.gse] = gse_log_item
+
+    geofetcher_obj = geofetch.Geofetcher()
 
     for gse in log_model_dict.keys():
 
@@ -98,7 +90,7 @@ def upload_geo_projects(
             _LOGGER.info(f"Project has been downloaded using geofetch")
         except Exception as err:
             gse_log.status = "failure"
-            gse_log.info = str(err)
+            gse_log.info = err
             gse_log.status_info = "geofetcher"
             log_connection.upload_log(gse_log)
             continue
@@ -132,17 +124,6 @@ def upload_geo_projects(
 
     _LOGGER.info(f"================== Finished ==================")
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
-
-
-# upload_geo_projects(
-#     namespace="new",
-#     tag="def",
-#     db="pep-db",
-#     host="localhost",
-#     user="postgres",
-#     password="docker",
-# )
-
 
 def _parse_cmdl(cmdl):
     parser = argparse.ArgumentParser(
@@ -186,7 +167,7 @@ def main():
     args = _parse_cmdl(sys.argv[1:])
     args_dict = vars(args)
 
-    upload_geo_projects(
+    upload_queued_projects(
         namespace=args_dict["namespace"],
         tag=args_dict["tag"],
         db=args_dict["db"],
