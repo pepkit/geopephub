@@ -63,8 +63,8 @@ class UploadLogger:
 
     def get_queued_project(self) -> List[LogModel]:
         """
-        blabla
-        :return:
+        Get projects, that have status: "queued"
+        :return: list of LogModel
         """
         with Session(self.engine) as session:
             _LOGGER.info("Uploading or updating project logs")

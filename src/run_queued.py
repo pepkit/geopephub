@@ -15,6 +15,7 @@ import logmuse
 import coloredlogs
 from log_uploader import UploadLogger
 from models import LogModel
+from utils import run_geofetch
 
 import peppy
 
@@ -35,8 +36,14 @@ def upload_queued_projects(
     password: str,
     port: int = 5432,
     tag: str = None,
-    overwrite: bool = True,
 ) -> NoReturn:
+
+    # LOG info
+    time_now = datetime.datetime.now()
+    _LOGGER.info(f"Time now: {time_now}")
+    _LOGGER.info(f"geofetch version: {geofetch.__version__}")
+    _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
+    _LOGGER.info(f"peppy version: {peppy.__version__}")
 
     pep_db_connection = pepdbagent.Connection(
         host=host, port=port, database=db, user=user, password=password
@@ -44,35 +51,34 @@ def upload_queued_projects(
     log_connection = UploadLogger(
         host=host, port=port, database=db, user=user, password=password
     )
-
-    time_now = datetime.datetime.now()
-
-    _LOGGER.info(f"Time now: {time_now}")
-    _LOGGER.info(f"geofetch version: {geofetch.__version__}")
-    _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
-    _LOGGER.info(f"peppy version: {peppy.__version__}")
-
     gse_log_list = log_connection.get_queued_project()
-    total_nb = len(gse_log_list)
+
+    log_model_dict = {}
+    for gse_log_item in gse_log_list:
+        log_model_dict[gse_log_item.gse] = gse_log_item
+
+    _upload_gse_project(pep_db_connection, log_connection, log_model_dict, namespace)
+
+
+def _upload_gse_project(pep_db_connection, log_connection, log_model_dict, namespace) -> NoReturn:
+    """
+    Get, upload to PEPhub and load log to database of GSE project
+    :param pep_db_connection: pepdbagent object connected to db
+    :param log_connection: UploadLogger object connected to db
+    :param log_model_dict: dictionary with LogModel (seq table model), where keys are GSEs
+    :param namespace: namespace where project's should be added
+    :return: NoReturn
+    """
+    geofetcher_obj = geofetch.Geofetcher()
+    total_nb = len(log_model_dict.keys())
     process_nb = 0
-
     _LOGGER.info(f"Number of projects that will be processed: {total_nb}")
-
     status_dict = {
         "total": total_nb,
         "success": 0,
         "failure": 0,
         "warning": 0,
     }
-
-    log_model_dict = {}
-
-    for gse_log_item in gse_log_list:
-
-        log_model_dict[gse_log_item.gse] = gse_log_item
-
-    geofetcher_obj = geofetch.Geofetcher()
-
     for gse in log_model_dict.keys():
 
         gse_log = log_model_dict[gse]
@@ -86,7 +92,7 @@ def upload_queued_projects(
 
         try:
             gse_log.log_stage = 2
-            project_dict = geofetcher_obj.get_projects(gse)
+            project_dict = run_geofetch(gse, geofetcher_obj)
             _LOGGER.info(f"Project has been downloaded using geofetch")
         except Exception as err:
             gse_log.status = "failure"
@@ -112,7 +118,7 @@ def upload_queued_projects(
                 namespace=namespace,
                 name=pep_name,
                 tag=pep_tag,
-                overwrite=overwrite,
+                overwrite=True,
             )
             gse_log.log_stage = 3
             gse_log.status = upload_return.status
@@ -124,6 +130,7 @@ def upload_queued_projects(
 
     _LOGGER.info(f"================== Finished ==================")
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
+
 
 def _parse_cmdl(cmdl):
     parser = argparse.ArgumentParser(
