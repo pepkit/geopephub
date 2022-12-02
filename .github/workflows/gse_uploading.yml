@@ -27,8 +27,8 @@ jobs:
       - name: Install dev dependencies
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
-      - name: Add to the queue
-        run: python src/geo_queue_insertion.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+#      - name: Add to the queue
+#        run: python src/geo_queue_insertion.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
 
       - name: Add to the database
-        run: python src/geo_pipeline_script.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python src/run_queued.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
