@@ -99,6 +99,7 @@ def _upload_gse_project(pep_db_connection, log_connection, log_model_dict, names
             gse_log.info = str(err)
             gse_log.status_info = "geofetcher"
             log_connection.upload_log(gse_log)
+            status_dict["failure"] += 1
             continue
 
         for prj_name in project_dict:
