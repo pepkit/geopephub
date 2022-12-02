@@ -21,7 +21,7 @@ class FunctionTimeoutError(Exception):
 def timeout(seconds_before_timeout=60):
     def decorate(f):
         def handler(signum, frame):
-            raise FunctionTimeoutError("Geofetch is running time is too long. TimeOut. ")
+            raise FunctionTimeoutError("Geofetch running time is too long. TimeOut.")
 
         def new_f(*args, **kwargs):
             old = signal.signal(signal.SIGALRM, handler)
