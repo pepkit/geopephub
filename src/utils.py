@@ -5,10 +5,23 @@ from typing import Dict
 import peppy
 
 
+class FunctionTimeoutError(Exception):
+    """
+    Time out error when function is running too long
+    """
+    def __init__(self, reason: str = ""):
+        """
+        Optionally provide explanation for exceptional condition.
+        :param str reason: some context or perhaps just a value that
+            could not be interpreted as an accession
+        """
+        super(FunctionTimeoutError, self).__init__(reason)
+
+
 def timeout(seconds_before_timeout=60):
     def decorate(f):
         def handler(signum, frame):
-            raise TimeoutError
+            raise FunctionTimeoutError("Geofetch is running time is too long. TimeOut. ")
 
         def new_f(*args, **kwargs):
             old = signal.signal(signal.SIGALRM, handler)
