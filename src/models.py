@@ -1,10 +1,19 @@
 from typing import Optional
 
-from sqlmodel import Field, SQLModel, create_engine, select
+from sqlmodel import SQLModel, Field
+from pydantic import validator
 import datetime
 
+from const import LOG_TABLE_NAME, STATUS_OPTIONS
 
-class LogModel(SQLModel, table=True):
+# LOG Stages:
+# 0 - list of GSEs was fetched
+# 1 - start processing particular GSE
+# 2 - Geofetcher downloaded project
+# 3 - Finished
+
+
+class LogModel(SQLModel, table=False):
     id: Optional[int] = Field(default=None, primary_key=True)
     gse: str
     registry_path: Optional[str]
@@ -14,18 +23,13 @@ class LogModel(SQLModel, table=True):
     status_info: Optional[str]
     info: Optional[str]
 
-    __tablename__ = "geo_log"
+    @validator("status")
+    def status_checker(cls, value):
+        if value not in STATUS_OPTIONS:
+            raise ValueError("Incorrect status value")
+
+        return value
 
 
-# LOG Stages:
-# 0 - list of GSEs was fetched
-# 1 - start processing particular GSE
-# 2 - Geofetcher downloaded project
-# 3 - Finished
-
-# Statuses:
-# queued
-# processing
-# success
-# failure
-# warning
+class LogModelSQL(LogModel, table=True):
+    __tablename__ = LOG_TABLE_NAME

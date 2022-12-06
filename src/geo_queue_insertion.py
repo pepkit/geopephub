@@ -11,6 +11,8 @@ from models import LogModel
 
 import peppy
 
+from const import LAST_UPDATE_DATES
+
 
 _LOGGER = logmuse.init_logger("geo_to_pephub")
 coloredlogs.install(
@@ -27,7 +29,7 @@ def upload_geo_projects(
     user: str,
     password: str,
     port: int = 5432,
-    tag: str = 'raw',
+    tag: str = "raw",
 ) -> NoReturn:
     """
 
@@ -41,10 +43,6 @@ def upload_geo_projects(
     :param overwrite: update project in PEPhub if it already exists
     :return: NoReturn
     """
-
-    pep_db_connection = pepdbagent.Connection(
-        host=host, port=port, database=db, user=user, password=password
-    )
     log_connection = UploadLogger(
         host=host, port=port, database=db, user=user, password=password
     )
@@ -56,9 +54,7 @@ def upload_geo_projects(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
-    # print(host, port, db, user, password)
-
-    gse_list = geofetch.Finder().get_gse_by_day_count(2)
+    gse_list = geofetch.Finder().get_gse_by_day_count(LAST_UPDATE_DATES)
 
     total_nb = len(gse_list)
 
@@ -67,7 +63,12 @@ def upload_geo_projects(
     log_model_dict = {}
 
     for gse in gse_list:
-        model_l = LogModel(gse=gse, log_stage=0, status="queued", registry_path=f'{namespace}/{gse}:{tag}')
+        model_l = LogModel(
+            gse=gse,
+            log_stage=0,
+            status="queued",
+            registry_path=f"{namespace}/{gse}:{tag}",
+        )
         model_l = log_connection.upload_log(model_l)
         log_model_dict[gse] = model_l
         _LOGGER.info(f"GSE: '{gse}' was added to the queue! ")
@@ -135,3 +136,13 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Pipeline aborted.")
         sys.exit(1)
+
+
+# upload_geo_projects(
+#     namespace="new",
+#     tag="def",
+#     db="pep-db",
+#     host="localhost",
+#     user="postgres",
+#     password="docker",
+# )

@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, create_engine, Session, select
-from models import LogModel
+from models import LogModel, LogModelSQL
 import datetime
-from typing import List
+from typing import List, Union
 
 import logmuse
 import coloredlogs
@@ -46,7 +46,7 @@ class UploadLogger:
         SQLModel.metadata.create_all(self.engine)
         _LOGGER.info("Table was created")
 
-    def upload_log(self, response: LogModel) -> LogModel:
+    def upload_log(self, response: Union[LogModel, LogModelSQL]) -> LogModel:
         """
         Update or upload
         :param response:
@@ -54,12 +54,16 @@ class UploadLogger:
         """
         _LOGGER.info("Uploading or updating project logs")
         response.date = datetime.datetime.now()
+        if isinstance(response, LogModelSQL):
+            sql_response = response
+        else:
+            sql_response = LogModelSQL(**response.dict())
         with Session(self.engine) as session:
-            session.add(response)
+            session.add(sql_response)
             session.commit()
-            session.refresh(response)
+            session.refresh(sql_response)
         _LOGGER.info("Information was uploaded")
-        return response
+        return sql_response
 
     def get_queued_project(self) -> List[LogModel]:
         """
@@ -68,7 +72,7 @@ class UploadLogger:
         """
         with Session(self.engine) as session:
             _LOGGER.info("Uploading or updating project logs")
-            statement = select(LogModel).where(LogModel.status == "queued")
+            statement = select(LogModelSQL).where(LogModelSQL.status == "queued")
             results = session.exec(statement)
             heroes = results.all()
             return heroes

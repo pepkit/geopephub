@@ -60,7 +60,9 @@ def upload_queued_projects(
     _upload_gse_project(pep_db_connection, log_connection, log_model_dict, namespace)
 
 
-def _upload_gse_project(pep_db_connection, log_connection, log_model_dict, namespace) -> NoReturn:
+def _upload_gse_project(
+    pep_db_connection, log_connection, log_model_dict, namespace
+) -> NoReturn:
     """
     Get, upload to PEPhub and load log to database of GSE project
     :param pep_db_connection: pepdbagent object connected to db
@@ -192,3 +194,13 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Pipeline aborted.")
         sys.exit(1)
+
+
+# upload_queued_projects(
+#     namespace="new",
+#     tag="def",
+#     db="pep-db",
+#     host="localhost",
+#     user="postgres",
+#     password="docker",
+# )
