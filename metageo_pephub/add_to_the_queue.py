@@ -6,7 +6,7 @@ from typing import NoReturn
 import datetime
 import logmuse
 import coloredlogs
-from log_uploader import UploadLogger
+from update_status import UploadLogger
 from models import StatusModel
 
 import peppy

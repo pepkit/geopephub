@@ -1,4 +1,4 @@
-from log_uploader import UploadLogger
+from update_status import UploadLogger
 import argparse
 import sys
 
