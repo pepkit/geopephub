@@ -13,8 +13,8 @@ from typing import NoReturn
 import datetime
 import logmuse
 import coloredlogs
-from log_uploader import UploadLogger
-from models import LogModel
+from update_status import UploadLogger
+from models import StatusModel
 from utils import run_geofetch
 
 import peppy
@@ -45,7 +45,7 @@ def upload_queued_projects(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
-    pep_db_connection = pepdbagent.Connection(
+    agent = pepdbagent.PEPDatabaseAgent(
         host=host, port=port, database=db, user=user, password=password
     )
     log_connection = UploadLogger(
@@ -57,17 +57,17 @@ def upload_queued_projects(
     for gse_log_item in gse_log_list:
         log_model_dict[gse_log_item.gse] = gse_log_item
 
-    _upload_gse_project(pep_db_connection, log_connection, log_model_dict, namespace)
+    _upload_gse_project(agent, log_connection, log_model_dict, namespace, tag)
 
 
 def _upload_gse_project(
-    pep_db_connection, log_connection, log_model_dict, namespace
+    agent, log_connection, log_model_dict, namespace, tag=None,
 ) -> NoReturn:
     """
     Get, upload to PEPhub and load log to database of GSE project
-    :param pep_db_connection: pepdbagent object connected to db
+    :param agent: pepdbagent object connected to db
     :param log_connection: UploadLogger object connected to db
-    :param log_model_dict: dictionary with LogModel (seq table model), where keys are GSEs
+    :param log_model_dict: dictionary with StatusModel (seq table model), where keys are GSEs
     :param namespace: namespace where project's should be added
     :return: NoReturn
     """
@@ -115,21 +115,28 @@ def _upload_gse_project(
             _LOGGER.info(
                 f"Namespace = {namespace} ; Project_name = {pep_name} ; Tag = {pep_tag}"
             )
-
-            upload_return = pep_db_connection.upload_project(
-                project=project_dict[prj_name],
-                namespace=namespace,
-                name=pep_name,
-                tag=pep_tag,
-                overwrite=True,
-            )
             gse_log.log_stage = 3
-            gse_log.status = upload_return.status
-            gse_log.status_info = upload_return.log_stage
-            gse_log.info = upload_return.info
-            log_connection.upload_log(gse_log)
+            gse_log.status_info = "pepdbagent"
+            try:
 
-            status_dict[upload_return.status] += 1
+                agent.project.create(
+                    project=project_dict[prj_name],
+                    namespace=namespace,
+                    name=pep_name,
+                    tag=pep_tag,
+                    overwrite=True,
+                )
+                gse_log.status = "success"
+                gse_log.info = ""
+                log_connection.upload_log(gse_log)
+
+                status_dict["success"] += 1
+            except Exception as err:
+                gse_log.status = "failure"
+                gse_log.info = str(err)
+                log_connection.upload_log(gse_log)
+
+                status_dict["failure"] += 1
 
     _LOGGER.info(f"================== Finished ==================")
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")

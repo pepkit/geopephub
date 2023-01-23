@@ -1,4 +1,4 @@
-LOG_TABLE_NAME = "geo_log"
+LOG_TABLE_NAME = "geo_status"
 
 STATUS_OPTIONS = [
     "queued",

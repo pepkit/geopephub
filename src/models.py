@@ -13,7 +13,7 @@ from const import LOG_TABLE_NAME, STATUS_OPTIONS
 # 3 - Finished
 
 
-class LogModel(SQLModel, table=False):
+class StatusModel(SQLModel, table=False):
     id: Optional[int] = Field(default=None, primary_key=True)
     gse: str
     registry_path: Optional[str]
@@ -31,5 +31,5 @@ class LogModel(SQLModel, table=False):
         return value
 
 
-class LogModelSQL(LogModel, table=True):
+class StatusModelSQL(StatusModel, table=True):
     __tablename__ = LOG_TABLE_NAME

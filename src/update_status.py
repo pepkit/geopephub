@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, create_engine, Session, select
-from models import LogModel, LogModelSQL
+from models import StatusModel, StatusModelSQL
 import datetime
 from typing import List, Union
 
@@ -46,7 +46,7 @@ class UploadLogger:
         SQLModel.metadata.create_all(self.engine)
         _LOGGER.info("Table was created")
 
-    def upload_log(self, response: Union[LogModel, LogModelSQL]) -> LogModel:
+    def upload_log(self, response: Union[StatusModel, StatusModelSQL]) -> StatusModel:
         """
         Update or upload
         :param response:
@@ -54,10 +54,10 @@ class UploadLogger:
         """
         _LOGGER.info("Uploading or updating project logs")
         response.date = datetime.datetime.now()
-        if isinstance(response, LogModelSQL):
+        if isinstance(response, StatusModelSQL):
             sql_response = response
         else:
-            sql_response = LogModelSQL(**response.dict())
+            sql_response = StatusModelSQL(**response.dict())
         with Session(self.engine) as session:
             session.add(sql_response)
             session.commit()
@@ -65,14 +65,14 @@ class UploadLogger:
         _LOGGER.info("Information was uploaded")
         return sql_response
 
-    def get_queued_project(self) -> List[LogModel]:
+    def get_queued_project(self) -> List[StatusModel]:
         """
         Get projects, that have status: "queued"
-        :return: list of LogModel
+        :return: list of StatusModel
         """
         with Session(self.engine) as session:
             _LOGGER.info("Uploading or updating project logs")
-            statement = select(LogModelSQL).where(LogModelSQL.status == "queued")
+            statement = select(StatusModelSQL).where(StatusModelSQL.status == "queued")
             results = session.exec(statement)
             heroes = results.all()
             return heroes

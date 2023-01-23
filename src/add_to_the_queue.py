@@ -7,7 +7,7 @@ import datetime
 import logmuse
 import coloredlogs
 from log_uploader import UploadLogger
-from models import LogModel
+from models import StatusModel
 
 import peppy
 
@@ -40,7 +40,6 @@ def upload_geo_projects(
     :param user: Username
     :param password: Password
     :param port: port of the database
-    :param overwrite: update project in PEPhub if it already exists
     :return: NoReturn
     """
     log_connection = UploadLogger(
@@ -63,7 +62,7 @@ def upload_geo_projects(
     log_model_dict = {}
 
     for gse in gse_list:
-        model_l = LogModel(
+        model_l = StatusModel(
             gse=gse,
             log_stage=0,
             status="queued",
