@@ -16,6 +16,7 @@ from const import LOG_TABLE_NAME, STATUS_OPTIONS
 class StatusModel(SQLModel, table=False):
     id: Optional[int] = Field(default=None, primary_key=True)
     gse: str
+    target: str
     registry_path: Optional[str]
     date: Optional[datetime.datetime] = datetime.datetime.now()
     log_stage: int
