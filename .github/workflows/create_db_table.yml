@@ -23,5 +23,5 @@ jobs:
       - name: Install dev dependencies
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
-      - name: Run upload
-        run: python metageo_pephub/main.py --function create_status_table --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+      - name: Create log table
+        run: python metageo_pephub/main.py --target bedbase --function create_status_table --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
