@@ -1,4 +1,4 @@
-name: Upload projects
+name: Queue and upload GEO projects
 
 on:
   schedule:
@@ -28,7 +28,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Add to the queue
-        run: python metageo_pephub/add_to_the_queue.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python metageo_pephub/main.py --target geo --function q_insert --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
 
       - name: Add to the database
-        run: python metageo_pephub/upload_queued_projects.py --namespace geo_recent --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python metageo_pephub/main.py --target geo --function q_upload --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}

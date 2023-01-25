@@ -65,14 +65,15 @@ class UploadLogger:
         _LOGGER.info("Information was uploaded")
         return sql_response
 
-    def get_queued_project(self) -> List[StatusModel]:
+    def get_queued_project(self, target) -> List[StatusModel]:
         """
         Get projects, that have status: "queued"
+        :param target: namespece where project is a target
         :return: list of StatusModel
         """
         with Session(self.engine) as session:
             _LOGGER.info("Uploading or updating project logs")
-            statement = select(StatusModelSQL).where(StatusModelSQL.status == "queued")
+            statement = select(StatusModelSQL).where(StatusModelSQL.status == "queued").where(StatusModelSQL.target == target)
             results = session.exec(statement)
             heroes = results.all()
             return heroes
