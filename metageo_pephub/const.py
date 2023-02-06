@@ -7,6 +7,7 @@ STATUS_OPTIONS = [
     "success",
     "failure",
     "warning",
+    "initial",
 ]
 
 # number of last days used in Finder

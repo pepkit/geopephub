@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, create_engine, Session, select
-from models import StatusModel, StatusModelSQL
+from models import StatusModel, StatusModelSQL, CycleModel
 import datetime
 from typing import List, Union
 
@@ -14,7 +14,7 @@ coloredlogs.install(
 )
 
 
-class UploadLogger:
+class UploadStatusConnection:
     def __init__(
         self,
         host="localhost",
@@ -46,14 +46,14 @@ class UploadLogger:
         SQLModel.metadata.create_all(self.engine)
         _LOGGER.info("Table was created")
 
-    def upload_log(self, response: Union[StatusModel, StatusModelSQL]) -> StatusModel:
+    def upload_gse_log(self, response: Union[StatusModel, StatusModelSQL]) -> StatusModel:
         """
         Update or upload
         :param response:
         :return: Log Model
         """
         _LOGGER.info("Uploading or updating project logs")
-        response.date = datetime.datetime.now()
+        # response.date = datetime.datetime.now()
         if isinstance(response, StatusModelSQL):
             sql_response = response
         else:
@@ -72,8 +72,37 @@ class UploadLogger:
         :return: list of StatusModel
         """
         with Session(self.engine) as session:
-            _LOGGER.info("Uploading or updating project logs")
+            _LOGGER.info("Getting queued projects")
             statement = select(StatusModelSQL).where(StatusModelSQL.status == "queued").where(StatusModelSQL.target == target)
             results = session.exec(statement)
             heroes = results.all()
             return heroes
+
+    def update_upload_cycle(self, cycle_model: CycleModel) -> CycleModel:
+        """
+        :param cycle_model: pydantic cycle database model with necessary data
+        :return: pydantic cycle database model with necessary data that was inserted to db
+        """
+        _LOGGER.info("Uploading or updating project logs")
+        cycle_model.status_date = datetime.datetime.now()
+        with Session(self.engine) as session:
+            session.add(cycle_model)
+            session.commit()
+            session.refresh(cycle_model)
+        _LOGGER.info("Information was uploaded")
+        return cycle_model
+
+    def get_queued_cycle(self, target: str = None) -> List[CycleModel]:
+        """
+        Get list of queued_cycle
+        :param target: target(namespace) of the cycle
+        :return: list of queued cycles
+        """
+        with Session(self.engine) as session:
+            _LOGGER.info("Getting queued cycles")
+            statement = select(CycleModel).where(CycleModel.status == "queued")
+            if target:
+                statement = statement.where(CycleModel.target == target)
+            results = session.exec(statement)
+            queued_cycle = results.all()
+            return queued_cycle

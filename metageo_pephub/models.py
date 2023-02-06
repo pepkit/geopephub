@@ -13,25 +13,33 @@ from const import LOG_TABLE_NAME, STATUS_OPTIONS, UPLOAD_DATE_TABLE_NAME
 # 3 - Finished
 
 
-class UploadDateModel(SQLModel, table=True):
+class CycleModel(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    status_data: Optional[datetime.datetime] = datetime.datetime.now()
+    status_date: Optional[datetime.datetime] = datetime.datetime.now()
     target: str
     status: str
-    start_period: Optional[datetime.datetime]
-    end_period: Optional[datetime.datetime]
-    number_of_successes = Optional[int]
-    number_of_failures = Optional[int]
+    start_period: Optional[str]
+    end_period: Optional[str]
+    number_of_projects: Optional[int]
+    number_of_successes: Optional[int]
+    number_of_failures: Optional[int]
 
     __tablename__ = UPLOAD_DATE_TABLE_NAME
+
+    @validator("status")
+    def status_checker(cls, value):
+        if value not in STATUS_OPTIONS:
+            raise ValueError("Incorrect status value")
+
+        return value
 
 
 class StatusModel(SQLModel, table=False):
     id: Optional[int] = Field(default=None, primary_key=True)
     gse: str
-    target: str
+    target: str #TODO: remove it
     registry_path: Optional[str]
-    status_date_id: Optional[int] = Field(default=None, foreign_key=f"{UPLOAD_DATE_TABLE_NAME}.id")
+    upload_cycle_id: Optional[int] = Field(default=None, foreign_key=f"{UPLOAD_DATE_TABLE_NAME}.id")
     log_stage: int
     status: str
     status_info: Optional[str]

@@ -6,9 +6,11 @@ from typing import NoReturn
 import datetime
 import logmuse
 import coloredlogs
-from update_status import UploadLogger
-from models import StatusModel
+from update_status import UploadStatusConnection
+from models import StatusModel, CycleModel
 from utils import run_geofetch
+
+from datetime import timedelta
 
 import peppy
 
@@ -68,7 +70,7 @@ def metageo_main(
     elif function == "insert_one":
         ...
     elif function == "create_status_table":
-        connection = UploadLogger(
+        connection = UploadStatusConnection(
             database=db,
             host=host,
             user=user,
@@ -104,7 +106,7 @@ def add_to_queue(
     :param port: port of the database
     :return: NoReturn
     """
-    log_connection = UploadLogger(
+    status_db_connection = UploadStatusConnection(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -115,16 +117,33 @@ def add_to_queue(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
+    today_date = datetime.datetime.today()
+    start_date = today_date - timedelta(days=period)
+    today_date_str = today_date.strftime("%Y/%m/%d")
+    start_date_str = start_date.strftime("%Y/%m/%d")
+    # return self.get_gse_by_date(start_date_str)
+
+    this_cycle = CycleModel(
+        target=target,
+        status="initial",
+        start_period=start_date_str,
+        end_period=today_date_str,
+    )
+    status_db_connection.update_upload_cycle(this_cycle)
+
     if target == "bedbase":
-        gse_list = geofetch.Finder(filters="(bed)").get_gse_by_day_count(period)
+        gse_list = geofetch.Finder(filters="(bed)").get_gse_by_date(start_date_str, today_date_str)
     elif target == "geo":
-        gse_list = geofetch.Finder().get_gse_by_day_count(period)
+        gse_list = geofetch.Finder().get_gse_by_date(start_date_str, today_date_str)
     else:
+        this_cycle.status = "failure"
+        status_db_connection.update_upload_cycle(this_cycle)
         raise Exception(f"Error in target: {target}")
 
-    total_nb = len(gse_list)
+    this_cycle.number_of_projects = len(gse_list)
+    status_db_connection.update_upload_cycle(this_cycle)
 
-    _LOGGER.info(f"Number of projects that will be processed: {total_nb}")
+    _LOGGER.info(f"Number of projects that will be processed: {this_cycle.number_of_projects}")
 
     log_model_dict = {}
 
@@ -135,13 +154,18 @@ def add_to_queue(
             log_stage=0,
             status="queued",
             registry_path=f"{target}/{gse}:{tag}",
+            upload_cycle_id=this_cycle.id
         )
-        model_l = log_connection.upload_log(model_l)
+        model_l = status_db_connection.upload_gse_log(model_l)
         log_model_dict[gse] = model_l
+
         _LOGGER.info(f"GSE: '{gse}' was added to the queue! Target: {target}")
 
+    this_cycle.status = "queued"
+    status_db_connection.update_upload_cycle(this_cycle)
+
     _LOGGER.info(f"================== Finished ==================")
-    _LOGGER.info(f"\033[32mAfter run report: Added {total_nb} projects\033[0m")
+    _LOGGER.info(f"\033[32mAfter run report: Added {this_cycle.number_of_projects} projects\033[0m")
 
 
 def upload_queued_projects(
@@ -161,19 +185,21 @@ def upload_queued_projects(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
+
+
     agent = pepdbagent.PEPDatabaseAgent(
         host=host, port=port, database=db, user=user, password=password
     )
-    log_connection = UploadLogger(
+    status_db_connection = UploadStatusConnection(
         host=host, port=port, database=db, user=user, password=password
     )
-    gse_log_list = log_connection.get_queued_project(target=target)
+    gse_log_list = status_db_connection.get_queued_project(target=target)
 
     log_model_dict = {}
     for gse_log_item in gse_log_list:
         log_model_dict[gse_log_item.gse] = gse_log_item
 
-    _upload_gse_project(agent, log_connection, log_model_dict, target, tag)
+    _upload_gse_project(agent, status_db_connection, log_model_dict, target, tag)
 
 
 def _upload_gse_project(
@@ -182,7 +208,7 @@ def _upload_gse_project(
     """
     Get, upload to PEPhub and load log to database of GSE project
     :param agent: pepdbagent object connected to db
-    :param log_connection: UploadLogger object connected to db
+    :param log_connection: UploadStatusConnection object connected to db
     :param log_model_dict: dictionary with StatusModel (seq table model), where keys are GSEs
     :param target: namespace where project's should be added
     :return: NoReturn
@@ -210,7 +236,7 @@ def _upload_gse_project(
 
         gse_log.status = "processing"
         gse_log.log_stage = 1
-        log_connection.upload_log(gse_log)
+        log_connection.upload_gse_log(gse_log)
 
         process_nb += 1
         _LOGGER.info(f"\033[0;33mProcessing GSE: {gse}. {process_nb}/{total_nb}\033[0m")
@@ -223,7 +249,7 @@ def _upload_gse_project(
         except Exception as err:
             gse_log.status = "failure"
             gse_log.info = str(err)
-            log_connection.upload_log(gse_log)
+            log_connection.upload_gse_log(gse_log)
             status_dict["failure"] += 1
             continue
 
@@ -231,7 +257,7 @@ def _upload_gse_project(
             gse_log.status = "warning"
             gse_log.info = "No data was fetched from GEO, check if project has any data"
             gse_log.status_info = "geofetcher"
-            log_connection.upload_log(gse_log)
+            log_connection.upload_gse_log(gse_log)
             status_dict["warning"] += 1
             continue
 
@@ -241,7 +267,7 @@ def _upload_gse_project(
             pep_tag = prj_name_list[1]
 
             gse_log.registry_path = f"{target}/{pep_name}:{pep_tag}"
-            log_connection.upload_log(gse_log)
+            log_connection.upload_gse_log(gse_log)
 
             _LOGGER.info(
                 f"Namespace = {target} ; Project_name = {pep_name} ; Tag = {pep_tag}"
@@ -259,13 +285,13 @@ def _upload_gse_project(
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
-                log_connection.upload_log(gse_log)
+                log_connection.upload_gse_log(gse_log)
 
                 status_dict["success"] += 1
             except Exception as err:
                 gse_log.status = "failure"
                 gse_log.info = str(err)
-                log_connection.upload_log(gse_log)
+                log_connection.upload_gse_log(gse_log)
 
                 status_dict["failure"] += 1
 
