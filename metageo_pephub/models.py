@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field
 from pydantic import validator
 import datetime
 
-from const import LOG_TABLE_NAME, STATUS_OPTIONS
+from const import LOG_TABLE_NAME, STATUS_OPTIONS, UPLOAD_DATE_TABLE_NAME
 
 # LOG Stages:
 # 0 - list of GSEs was fetched
@@ -13,12 +13,25 @@ from const import LOG_TABLE_NAME, STATUS_OPTIONS
 # 3 - Finished
 
 
+class UploadDateModel(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    status_data: Optional[datetime.datetime] = datetime.datetime.now()
+    target: str
+    status: str
+    start_period: Optional[datetime.datetime]
+    end_period: Optional[datetime.datetime]
+    number_of_successes = Optional[int]
+    number_of_failures = Optional[int]
+
+    __tablename__ = UPLOAD_DATE_TABLE_NAME
+
+
 class StatusModel(SQLModel, table=False):
     id: Optional[int] = Field(default=None, primary_key=True)
     gse: str
     target: str
     registry_path: Optional[str]
-    date: Optional[datetime.datetime] = datetime.datetime.now()
+    status_date_id: Optional[int] = Field(default=None, foreign_key=f"{UPLOAD_DATE_TABLE_NAME}.id")
     log_stage: int
     status: str
     status_info: Optional[str]
