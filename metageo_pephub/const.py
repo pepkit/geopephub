@@ -1,4 +1,5 @@
-LOG_TABLE_NAME = "geo_status"
+STATUS_TABLE_NAME = "geo_sample_status"
+CYCLE_TABLE_NAME = "geo_cycle_status"
 
 STATUS_OPTIONS = [
     "queued",
@@ -6,6 +7,7 @@ STATUS_OPTIONS = [
     "success",
     "failure",
     "warning",
+    "initial",
 ]
 
 # number of last days used in Finder

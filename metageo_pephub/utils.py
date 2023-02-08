@@ -47,7 +47,7 @@ def timeout(seconds_before_timeout=60):
     return decorate
 
 
-@timeout(120)
+@timeout(240)
 def run_geofetch(
     gse: str, geofetcher_obj: geofetch.Geofetcher = None
 ) -> Dict[str, peppy.Project]:

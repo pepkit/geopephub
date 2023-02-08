@@ -3,8 +3,11 @@ from argparse import ArgumentParser
 
 def _parse_cmdl(cmdl):
     parser = ArgumentParser(
-        description="Automatic log table creator",
+        description="metageo_pephub pipline runer",
     )
+    parser_checker = parser.add_argument_group("checker")
+    parser_one_inserter = parser.add_argument_group("inserter_one")
+
     parser.add_argument(
         "--host",
         required=True,
@@ -36,12 +39,12 @@ def _parse_cmdl(cmdl):
         "-f",
         "--function",
         required=True,
-        choices=["q_insert", "q_upload", "insert_one", "create_status_table"],
+        choices=["run_queuer", "run_uploader", "insert_one", "create_status_table", "run_checker"],
         help="Choose which function should metageo should run",
         type=str,
     )
 
-    parser.add_argument(
+    parser_one_inserter.add_argument(
         "-g",
         "--gse",
         required=False,
@@ -57,6 +60,7 @@ def _parse_cmdl(cmdl):
         help="Period - number of days (time frame) when fetch metadata from GEO [used for q_fetch function]",
         type=int,
     )
+
     parser.add_argument(
         "--target",
         required=True,
@@ -72,8 +76,17 @@ def _parse_cmdl(cmdl):
         help="tag of the project",
     )
 
+    parser_checker.add_argument(
+        "--cycle-count",
+        required=False,
+        default=1,
+        type=int,
+        help="Cycle that has to be checked if it was successful"
+             " before the earliest one. e.g "
+             "if we want to check todays cycle (if cycles are happening every day)"
+             " you should insert 1."
+             "(2) if you want to specify cycle that was happening 3 week before, and every cycle is happening"
+             "once a week, you should set 2",
+    )
+
     return parser.parse_args(cmdl)
-
-
-
-
