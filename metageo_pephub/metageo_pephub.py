@@ -456,6 +456,14 @@ def run_upload_checker(
                                port=port,
                                tag=tag,
                                )
+        upload_queued_projects(db=db,
+                               host=host,
+                               user=user,
+                               password=password,
+                               target=target,
+                               port=port,
+                               tag=tag,
+                               )
 
 
 class CycleSuccessException(Exception):
