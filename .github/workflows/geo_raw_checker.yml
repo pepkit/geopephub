@@ -27,6 +27,17 @@ jobs:
       - name: Install dev dependencies
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
-      - name: Check 1 day before
+      - name: Check 1 cycle before
         run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 1
 
+      - name: Check 2 cycle before
+        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 2
+
+      - name: Check 3 cycle before
+        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 3
+
+      - name: Check 4 cycle before
+        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 4
+
+      - name: Check 5 cycle before
+        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 5
