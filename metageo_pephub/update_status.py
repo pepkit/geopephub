@@ -46,7 +46,9 @@ class UploadStatusConnection:
         SQLModel.metadata.create_all(self.engine)
         _LOGGER.info("Table was created")
 
-    def upload_gse_log(self, response: Union[StatusModel, StatusModelSQL]) -> StatusModel:
+    def upload_gse_log(
+        self, response: Union[StatusModel, StatusModelSQL]
+    ) -> StatusModel:
         """
         Update or upload
         :param response:
@@ -65,15 +67,36 @@ class UploadStatusConnection:
         _LOGGER.info("Information was uploaded")
         return sql_response
 
-    def get_queued_project(self, target) -> List[StatusModel]:
+    def get_queued_project(self, cycle_id: int) -> List[StatusModel]:
         """
         Get projects, that have status: "queued"
-        :param target: namespece where project is a target
+        :param cycle_id: cycle id in which project was uploaded
         :return: list of StatusModel
         """
         with Session(self.engine) as session:
             _LOGGER.info("Getting queued projects")
-            statement = select(StatusModelSQL).where(StatusModelSQL.status == "queued").where(StatusModelSQL.target == target)
+            statement = (
+                select(StatusModelSQL)
+                .where(StatusModelSQL.status == "queued")
+                .where(StatusModelSQL.upload_cycle_id == cycle_id)
+            )
+            results = session.exec(statement)
+            heroes = results.all()
+            return heroes
+
+    def get_failed_project(self, cycle_id: int) -> List[StatusModel]:
+        """
+        Get projects, that have status: "queued"
+        :param cycle_id: cycle id in which project was uploaded
+        :return: list of StatusModel
+        """
+        with Session(self.engine) as session:
+            _LOGGER.info("Getting queued projects")
+            statement = (
+                select(StatusModelSQL)
+                .where(StatusModelSQL.status != "success")
+                .where(StatusModelSQL.upload_cycle_id == cycle_id)
+            )
             results = session.exec(statement)
             heroes = results.all()
             return heroes
@@ -106,3 +129,30 @@ class UploadStatusConnection:
             results = session.exec(statement)
             queued_cycle = results.all()
             return queued_cycle
+
+    def was_run_successful(
+        self,
+        start_period: str,
+        end_period: str,
+        target: str = None,
+    ) -> CycleModel:
+        """
+        Check if run was successful
+        :param start_period: start date of cycle [e.g. 2023/02/07]
+        :param end_period: end date of cycle [e.g. 2023/02/08]
+        :param target: target namespace
+        :return: CycleModel
+        """
+        _LOGGER.info(f"checking success of target: {target} [{start_period}-{end_period}]")
+        with Session(self.engine) as session:
+            _LOGGER.info("Getting queued cycles")
+            statement = (
+                select(CycleModel)
+                .where(CycleModel.start_period == start_period)
+                .where(CycleModel.end_period == end_period)
+            )
+            if target:
+                statement = statement.where(CycleModel.target == target)
+            results = session.exec(statement)
+            queued_cycle = results.all()
+            return queued_cycle[0]

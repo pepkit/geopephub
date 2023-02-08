@@ -20,9 +20,9 @@ class CycleModel(SQLModel, table=True):
     status: str
     start_period: Optional[str]
     end_period: Optional[str]
-    number_of_projects: Optional[int]
-    number_of_successes: Optional[int]
-    number_of_failures: Optional[int]
+    number_of_projects: Optional[int] = 0
+    number_of_successes: Optional[int] = 0
+    number_of_failures: Optional[int] = 0
 
     __tablename__ = UPLOAD_DATE_TABLE_NAME
 
@@ -37,9 +37,11 @@ class CycleModel(SQLModel, table=True):
 class StatusModel(SQLModel, table=False):
     id: Optional[int] = Field(default=None, primary_key=True)
     gse: str
-    target: str #TODO: remove it
+    target: str  # TODO: remove it
     registry_path: Optional[str]
-    upload_cycle_id: Optional[int] = Field(default=None, foreign_key=f"{UPLOAD_DATE_TABLE_NAME}.id")
+    upload_cycle_id: Optional[int] = Field(
+        default=None, foreign_key=f"{UPLOAD_DATE_TABLE_NAME}.id"
+    )
     log_stage: int
     status: str
     status_info: Optional[str]

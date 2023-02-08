@@ -1,9 +1,9 @@
-name: Queue and upload GEO projects
+name: Check failed cycles and samples
 
 on:
   schedule:
     # run every monday at 00:05
-    - cron: '0 10 * * *'
+    - cron: '4 10 * * *'
   workflow_dispatch:
     inputs: null
 
@@ -27,8 +27,6 @@ jobs:
       - name: Install dev dependencies
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
-      - name: Add to the queue
-        run: python metageo_pephub/main.py --target geo --function run_queuer --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+      - name: Check 1 day before
+        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 1
 
-      - name: Add to the database
-        run: python metageo_pephub/main.py --target geo --function run_uploader --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
