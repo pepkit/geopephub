@@ -1,4 +1,4 @@
-name: Queue and upload BEDbase projects
+name: Check failed cycles and samples for bedbase
 
 on:
   schedule:

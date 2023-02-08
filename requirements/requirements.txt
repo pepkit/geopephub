@@ -1,4 +1,5 @@
-geofetch>=0.12.0
+#geofetch>=0.12.0
+geofetch @ git+https://github.com/pepkit/geofetch@dev#egg=geofetch
 pepdbagent>=0.3.0
 logmuse>=0.2.7
 coloredlogs>=15.0.1
