@@ -1,5 +1,5 @@
-LOG_TABLE_NAME = "geo_status_test"
-UPLOAD_DATE_TABLE_NAME = "geo_upload_date_status_test"
+STATUS_TABLE_NAME = "geo_sample_status"
+CYCLE_TABLE_NAME = "geo_cycle_status"
 
 STATUS_OPTIONS = [
     "queued",

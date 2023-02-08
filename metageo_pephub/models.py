@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field
 from pydantic import validator
 import datetime
 
-from const import LOG_TABLE_NAME, STATUS_OPTIONS, UPLOAD_DATE_TABLE_NAME
+from const import STATUS_TABLE_NAME, STATUS_OPTIONS, CYCLE_TABLE_NAME
 
 # LOG Stages:
 # 0 - list of GSEs was fetched
@@ -24,7 +24,7 @@ class CycleModel(SQLModel, table=True):
     number_of_successes: Optional[int] = 0
     number_of_failures: Optional[int] = 0
 
-    __tablename__ = UPLOAD_DATE_TABLE_NAME
+    __tablename__ = CYCLE_TABLE_NAME
 
     @validator("status")
     def status_checker(cls, value):
@@ -40,7 +40,7 @@ class StatusModel(SQLModel, table=False):
     target: str  # TODO: remove it
     registry_path: Optional[str]
     upload_cycle_id: Optional[int] = Field(
-        default=None, foreign_key=f"{UPLOAD_DATE_TABLE_NAME}.id"
+        default=None, foreign_key=f"{CYCLE_TABLE_NAME}.id"
     )
     log_stage: int
     status: str
@@ -56,4 +56,4 @@ class StatusModel(SQLModel, table=False):
 
 
 class StatusModelSQL(StatusModel, table=True):
-    __tablename__ = LOG_TABLE_NAME
+    __tablename__ = STATUS_TABLE_NAME

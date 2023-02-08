@@ -3,7 +3,7 @@ name: Check failed cycles and samples
 on:
   schedule:
     # run every monday at 00:05
-    - cron: '4 10 * * *'
+    - cron: '0 11 * * *'
   workflow_dispatch:
     inputs: null
 
