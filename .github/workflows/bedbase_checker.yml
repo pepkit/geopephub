@@ -32,3 +32,12 @@ jobs:
 
       - name: Check 2 cycle before
         run: python metageo_pephub/main.py --target bedbase --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --period 2 --cycle-count 2
+
+      - name: Check 3 cycle before
+        run: python metageo_pephub/main.py --target bedbase --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --period 2 --cycle-count 1
+
+      - name: Check 4 cycle before
+        run: python metageo_pephub/main.py --target bedbase --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --period 2 --cycle-count 2
+
+      - name: Check 5 cycle before
+        run: python metageo_pephub/main.py --target bedbase --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --period 2 --cycle-count 1
