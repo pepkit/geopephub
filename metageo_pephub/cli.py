@@ -39,7 +39,13 @@ def _parse_cmdl(cmdl):
         "-f",
         "--function",
         required=True,
-        choices=["run_queuer", "run_uploader", "insert_one", "create_status_table", "run_checker"],
+        choices=[
+            "run_queuer",
+            "run_uploader",
+            "insert_one",
+            "create_status_table",
+            "run_checker",
+        ],
         help="Choose which function should metageo should run",
         type=str,
     )
@@ -82,11 +88,11 @@ def _parse_cmdl(cmdl):
         default=1,
         type=int,
         help="Cycle that has to be checked if it was successful"
-             " before the earliest one. e.g "
-             "if we want to check todays cycle (if cycles are happening every day)"
-             " you should insert 1."
-             "(2) if you want to specify cycle that was happening 3 week before, and every cycle is happening"
-             "once a week, you should set 2",
+        " before the earliest one. e.g "
+        "if we want to check todays cycle (if cycles are happening every day)"
+        " you should insert 1."
+        "(2) if you want to specify cycle that was happening 3 week before, and every cycle is happening"
+        "once a week, you should set 2",
     )
 
     return parser.parse_args(cmdl)

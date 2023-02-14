@@ -143,7 +143,9 @@ class UploadStatusConnection:
         :param target: target namespace
         :return: CycleModel
         """
-        _LOGGER.info(f"checking success of target: {target} [{start_period}-{end_period}]")
+        _LOGGER.info(
+            f"checking success of target: {target} [{start_period}-{end_period}]"
+        )
         with Session(self.engine) as session:
             _LOGGER.info("Getting queued cycles")
             statement = (

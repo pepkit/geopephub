@@ -37,7 +37,7 @@ def metageo_main(
     period: int = 1,
     port: int = 5432,
     tag: str = None,
-    cycle_count: int = None
+    cycle_count: int = None,
 ):
     """
     :param target: Namespace of the projects [bedbase, geo]
@@ -217,16 +217,17 @@ def add_to_queue(
     end_date_str = today_date.strftime("%Y/%m/%d")
     start_date_str = start_date.strftime("%Y/%m/%d")
 
-    add_to_queue_by_period(db=db,
-                           host=host,
-                           user=user,
-                           password=password,
-                           target=target,
-                           tag=tag,
-                           start_period=start_date_str,
-                           end_period=end_date_str,
-                           port=port,
-                           )
+    add_to_queue_by_period(
+        db=db,
+        host=host,
+        user=user,
+        password=password,
+        target=target,
+        tag=tag,
+        start_period=start_date_str,
+        end_period=end_date_str,
+        port=port,
+    )
 
 
 def upload_queued_projects(
@@ -410,13 +411,17 @@ def run_upload_checker(
         host=host, port=port, database=db, user=user, password=password
     )
 
-    today_date = datetime.datetime.today() - timedelta(days=period_length*number_of_cycles)
+    today_date = datetime.datetime.today() - timedelta(
+        days=period_length * number_of_cycles
+    )
     start_date = today_date - timedelta(days=period_length)
     start_period = start_date.strftime("%Y/%m/%d")
     end_period = today_date.strftime("%Y/%m/%d")
 
     try:
-        cycle_info = status_db_connection.was_run_successful(target=target, start_period=start_period, end_period=end_period)
+        cycle_info = status_db_connection.was_run_successful(
+            target=target, start_period=start_period, end_period=end_period
+        )
 
         if not cycle_info.status == "success":
             raise CycleSuccessException
@@ -426,7 +431,9 @@ def run_upload_checker(
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
                 _LOGGER.info(f"All uploads were successful.")
             else:
-                list_of_failed_prj = status_db_connection.get_failed_project(cycle_info.id)
+                list_of_failed_prj = status_db_connection.get_failed_project(
+                    cycle_info.id
+                )
 
                 log_model_dict = {}
                 for gse_log_item in list_of_failed_prj:
@@ -439,31 +446,35 @@ def run_upload_checker(
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
                 )
-                cycle_info.number_of_successes += status_dict.get("success") + status_dict.get("warning")
+                cycle_info.number_of_successes += status_dict.get(
+                    "success"
+                ) + status_dict.get("warning")
                 cycle_info.number_of_failures = status_dict.get("failure")
                 status_db_connection.update_upload_cycle(cycle_info)
 
     except (CycleSuccessException, NoResultFound, IndexError) as err:
         _LOGGER.warning(f"Result not found, Uploading!")
         # return False
-        add_to_queue_by_period(db=db,
-                               host=host,
-                               user=user,
-                               password=password,
-                               target=target,
-                               start_period=start_period,
-                               end_period=end_period,
-                               port=port,
-                               tag=tag,
-                               )
-        upload_queued_projects(db=db,
-                               host=host,
-                               user=user,
-                               password=password,
-                               target=target,
-                               port=port,
-                               tag=tag,
-                               )
+        add_to_queue_by_period(
+            db=db,
+            host=host,
+            user=user,
+            password=password,
+            target=target,
+            start_period=start_period,
+            end_period=end_period,
+            port=port,
+            tag=tag,
+        )
+        upload_queued_projects(
+            db=db,
+            host=host,
+            user=user,
+            password=password,
+            target=target,
+            port=port,
+            tag=tag,
+        )
 
 
 class CycleSuccessException(Exception):
@@ -476,5 +487,3 @@ class CycleSuccessException(Exception):
         :param reason: some additional information
         """
         super(Exception, self).__init__(reason)
-
-
