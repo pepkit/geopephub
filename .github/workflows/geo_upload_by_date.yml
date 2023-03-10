@@ -1,5 +1,4 @@
 name: Run project uploader for specified period
-author: "@Khoroshevskyi"
 
 on:
   workflow_dispatch:
@@ -10,6 +9,10 @@ on:
       end_period:
         description: 'end period (Later in the calender) [e.g. "2021/05/27"]'
         required: true
+      target:
+        description: 'namespace target. ["bedbase", "geo"]'
+        required: false
+        default: "geo"
 
 
 jobs:
@@ -32,4 +35,4 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Upload Projects of specified period
-        run: python metageo_pephub/main.py --target geo --function check_by_date --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}
+        run: python metageo_pephub/main.py --target ${{ inputs.target }} --function check_by_date --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}
