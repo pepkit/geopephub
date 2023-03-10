@@ -7,6 +7,7 @@ def _parse_cmdl(cmdl):
     )
     parser_checker = parser.add_argument_group("checker")
     parser_one_inserter = parser.add_argument_group("inserter_one")
+    parser_check_by_date = parser.add_argument_group("check_by_date")
 
     parser.add_argument(
         "--host",
@@ -45,6 +46,7 @@ def _parse_cmdl(cmdl):
             "insert_one",
             "create_status_table",
             "run_checker",
+            "check_by_date",
         ],
         help="Choose which function should metageo should run",
         type=str,
@@ -93,6 +95,21 @@ def _parse_cmdl(cmdl):
         " you should insert 1."
         "(2) if you want to specify cycle that was happening 3 week before, and every cycle is happening"
         "once a week, you should set 2",
+    )
+
+    parser_check_by_date.add_argument(
+        "--start-period",
+        required=False,
+        default=None,
+        type=str,
+        help="start_period (Earlier in the calender) ['2020/02/25']",
+    )
+    parser_check_by_date.add_argument(
+        "--end-period",
+        required=False,
+        default=None,
+        type=str,
+        help="end period (Later in the calender) ['2021/05/27']",
     )
 
     return parser.parse_args(cmdl)

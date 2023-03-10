@@ -1,0 +1,35 @@
+name: Check failed cycles and samples
+
+on:
+
+  workflow_dispatch:
+    inputs:
+      start_period:
+        description: 'start_period (Earlier in the calender) [e.g. "2020/02/25"]'
+        required: true
+      end_period:
+        description: 'end period (Later in the calender) [e.g. "2021/05/27"]'
+        required: true
+
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [ "3.10" ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dev dependencies
+        run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
+
+      - name: Upload Projects of specified period
+        run: python metageo_pephub/main.py --target geo --function check_by_date --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}

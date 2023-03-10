@@ -130,6 +130,57 @@ class UploadStatusConnection:
             queued_cycle = results.all()
             return queued_cycle
 
+    def get_number_samples_success(self, cycle_id: int):
+        """
+        Get total number of samples that were uploaded successfully
+        :param cycle_id: cycle_id
+        :return: number of sucesses
+        """
+        with Session(self.engine) as session:
+            _LOGGER.info("Getting number of successes")
+            statement = (
+                select(StatusModelSQL)
+                .where(StatusModelSQL.status == "success")
+                .where(StatusModelSQL.upload_cycle_id == cycle_id)
+            )
+            results = session.exec(statement)
+            heroes = results.all()
+            return len(heroes)
+
+    def get_number_samples_failures(self, cycle_id: int):
+        """
+        Get total number of samples that failed to upload
+        :param cycle_id: cycle_id
+        :return: number of failures
+        """
+        with Session(self.engine) as session:
+            _LOGGER.info("Getting number of failures")
+            statement = (
+                select(StatusModelSQL)
+                .where(StatusModelSQL.status == "failure")
+                .where(StatusModelSQL.upload_cycle_id == cycle_id)
+            )
+            results = session.exec(statement)
+            heroes = results.all()
+            return len(heroes)
+
+    def get_number_samples_warnings(self, cycle_id: int):
+        """
+        Get total number of samples that with warnings
+        :param cycle_id: cycle_id
+        :return: number of failures
+        """
+        with Session(self.engine) as session:
+            _LOGGER.info("Getting number of projects with warning")
+            statement = (
+                select(StatusModelSQL)
+                .where(StatusModelSQL.status == "warning")
+                .where(StatusModelSQL.upload_cycle_id == cycle_id)
+            )
+            results = session.exec(statement)
+            heroes = results.all()
+            return len(heroes)
+
     def was_run_successful(
         self,
         start_period: str,

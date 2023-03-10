@@ -38,16 +38,20 @@ def metageo_main(
     port: int = 5432,
     tag: str = None,
     cycle_count: int = None,
+    start_period = None,
+    end_period = None,
 ):
     """
     :param target: Namespace of the projects [bedbase, geo]
     :param tag: Tag of the projects
     :param db: db name of the db
     :param host: host of the db
-    :param function: [should be in ["q_insert", "q_upload", "insert_one", "create_status_table"]]
+    :param function: [should be in ["q_insert", "q_upload", "insert_one", "create_status_table", "check_by_date"]]
     :param user: Username
     :param password: Password
     :param port: port of the database
+    :param start_period: [used in check_by_date function] the start of the period (the earliest date in the calender)
+    :param end_period: [used in check_by_date function] the end of the period (the latest date in the calender)
     :return: NoReturn
     """
     if function == "run_queuer":
@@ -91,6 +95,18 @@ def metageo_main(
             period_length=period,
             tag=tag,
             number_of_cycles=cycle_count,
+        )
+
+    elif function == "check_by_date":
+        check_by_date(
+            db=db,
+            host=host,
+            user=user,
+            password=password,
+            target=target,
+            tag=tag,
+            start_period=start_period,
+            end_period=end_period,
         )
 
     else:
@@ -272,10 +288,12 @@ def upload_queued_projects(
         )
 
         this_cycle.number_of_projects = status_dict.get("total")
-        this_cycle.number_of_successes = status_dict.get("success") + status_dict.get(
-            "warning"
-        )
-        this_cycle.number_of_failures = status_dict.get("failure")
+        # this_cycle.number_of_successes = status_dict.get("success") + status_dict.get(
+        #     "warning"
+        # )
+        this_cycle.number_of_successes = status_db_connection.get_number_samples_success(this_cycle.id) + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        # this_cycle.number_of_failures = status_dict.get("failure")
+        this_cycle.number_of_failures = status_db_connection.get_number_samples_failures(this_cycle.id)
 
         this_cycle.status = "success"
 
@@ -407,14 +425,55 @@ def run_upload_checker(
     :param number_of_cycles: what cycle behind should be checked?
     :return: NoReturn
     """
-    status_db_connection = UploadStatusConnection(
-        host=host, port=port, database=db, user=user, password=password
-    )
-
     today_date = datetime.datetime.today() - timedelta(
         days=period_length * number_of_cycles
     )
     start_date = today_date - timedelta(days=period_length)
+    start_period = start_date.strftime("%Y/%m/%d")
+    end_period = today_date.strftime("%Y/%m/%d")
+    check_by_date(
+        db=db,
+        host=host,
+        user=user,
+        password=password,
+        target=target,
+        start_period=start_period,
+        end_period=end_period,
+        tag=tag,
+        port=port,
+    )
+
+
+def check_by_date(
+    db: str,
+    host: str,
+    user: str,
+    password: str,
+    target: str,
+    start_period: str,
+    end_period: str,
+    tag: str,
+    port: int = 5432,
+) -> NoReturn:
+    """
+    Check if previous run (cycle) was successful.
+    :param target: Namespace of the projects (bedbase, geo)
+    :param db: db name of the db
+    :param host: host of the db
+    :param user: Username
+    :param password: Password
+    :param port: port of the database
+    :param start_period: start_period (Earlier in the calender) ["2020/02/25"]
+    :param end_period: end period (Later in the calender) ["2021/05/27"]
+    :param tag: tag of the projects
+    :return: NoReturn
+    """
+    status_db_connection = UploadStatusConnection(
+        host=host, port=port, database=db, user=user, password=password
+    )
+
+    today_date = datetime.datetime.strptime(end_period, "%Y/%m/%d")
+    start_date = datetime.datetime.strptime(start_period, "%Y/%m/%d")
     start_period = start_date.strftime("%Y/%m/%d")
     end_period = today_date.strftime("%Y/%m/%d")
 
@@ -423,7 +482,7 @@ def run_upload_checker(
             target=target, start_period=start_period, end_period=end_period
         )
 
-        if not cycle_info.status == "success":
+        if cycle_info.status not in ["success", "processing"]:
             raise CycleSuccessException
         else:
             _LOGGER.info(f"Cycle {start_period}:{end_period} was successful.")
@@ -446,10 +505,11 @@ def run_upload_checker(
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
                 )
-                cycle_info.number_of_successes += status_dict.get(
-                    "success"
-                ) + status_dict.get("warning")
-                cycle_info.number_of_failures = status_dict.get("failure")
+                cycle_info.number_of_successes = status_db_connection.get_number_samples_success(cycle_info.id) + status_db_connection.get_number_samples_warnings(cycle_info.id)
+                cycle_info.number_of_failures = status_db_connection.get_number_samples_failures(cycle_info.id)
+                cycle_info.status = "success"
+
+                # cycle_info.number_of_failures = status_dict.get("failure")
                 status_db_connection.update_upload_cycle(cycle_info)
 
     except (CycleSuccessException, NoResultFound, IndexError) as err:
@@ -475,7 +535,6 @@ def run_upload_checker(
             port=port,
             tag=tag,
         )
-
 
 class CycleSuccessException(Exception):
     """Exception, when cycle has status: Failure."""
