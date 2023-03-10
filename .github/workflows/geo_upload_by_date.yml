@@ -1,7 +1,7 @@
-name: Check failed cycles and samples
+name: Run project uploader for specified period
+author: "@Khoroshevskyi"
 
 on:
-
   workflow_dispatch:
     inputs:
       start_period:
