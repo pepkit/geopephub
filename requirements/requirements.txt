@@ -1,7 +1,7 @@
 #geofetch>=0.12.0
 geofetch @ git+https://github.com/pepkit/geofetch@dev#egg=geofetch
-pepdbagent>=0.3.0
+pepdbagent>=0.4.1
 logmuse>=0.2.7
 coloredlogs>=15.0.1
-peppy>=0.35.3
+peppy>=0.35.5
 sqlmodel>=0.0.8
