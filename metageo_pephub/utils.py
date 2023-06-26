@@ -4,6 +4,7 @@ import geofetch
 from typing import Dict
 import peppy
 
+GSE_LINK = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={}"
 
 class FunctionTimeoutError(Exception):
     """
@@ -61,3 +62,16 @@ def run_geofetch(
         geofetcher_obj = geofetch.Geofetcher()
     project_dict = geofetcher_obj.get_projects(gse)
     return project_dict
+
+
+def add_link_to_description(gse: str, pep: peppy.Project) -> peppy.Project:
+    """
+    Add geo project link to the project description (Markdown format)
+
+    :param gse: GSE id from GEO (e.g. GSE123456)
+    :param pep: peppy project
+    :return: peppy project
+    """
+    new_description = f"Data from [GEO {gse}]({GSE_LINK.format(gse)})\n{pep.description}"
+    pep.description = new_description
+    return pep

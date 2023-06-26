@@ -8,7 +8,7 @@ import logmuse
 import coloredlogs
 from update_status import UploadStatusConnection
 from models import StatusModel, CycleModel
-from utils import run_geofetch
+from utils import run_geofetch, add_link_to_description
 from sqlalchemy.exc import NoResultFound
 
 from datetime import timedelta
@@ -374,6 +374,7 @@ def _upload_gse_project(
             _LOGGER.info(
                 f"Namespace = {target} ; Project_name = {pep_name} ; Tag = {pep_tag}"
             )
+            project_dict[prj_name] = add_link_to_description(gse=prj_name_list[0], pep=project_dict[prj_name])
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
             try:
