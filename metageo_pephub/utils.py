@@ -74,4 +74,5 @@ def add_link_to_description(gse: str, pep: peppy.Project) -> peppy.Project:
     """
     new_description = f"Data from [GEO {gse}]({GSE_LINK.format(gse)})\n{pep.description}"
     pep.description = new_description
+    pep.name = gse.lower()
     return pep
