@@ -343,7 +343,7 @@ def _upload_gse_project(
         except Exception as err:
             gse_log.status = "failure"
             gse_log.info = str(err)
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
             status_dict["failure"] += 1
             continue
 
@@ -351,7 +351,7 @@ def _upload_gse_project(
             gse_log.status = "warning"
             gse_log.info = "No data was fetched from GEO, check if project has any data"
             gse_log.status_info = "geofetcher"
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
             status_dict["warning"] += 1
             continue
 
@@ -379,7 +379,7 @@ def _upload_gse_project(
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
-                log_connection.upload_gse_log(gse_log)
+                log_connection.upload_project_log(gse_log)
 
                 status_dict["success"] += 1
             except Exception as err:
