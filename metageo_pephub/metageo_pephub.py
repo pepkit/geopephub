@@ -377,12 +377,16 @@ def _upload_gse_project(
             )
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
+            if target == 'bedbase':
+                tag = pep_tag
+            else:
+                tag = "default"
             try:
                 agent.project.create(
                     project=project_dict[prj_name],
                     namespace=target,
                     name=pep_name,
-                    tag="default",
+                    tag=tag,
                     overwrite=True,
                     description=project_dict[prj_name].description,
                     pep_schema="pep/2.1.0",
