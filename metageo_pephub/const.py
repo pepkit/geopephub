@@ -12,3 +12,6 @@ STATUS_OPTIONS = [
 
 # number of last days used in Finder
 LAST_UPDATE_DATES = 1
+
+# db_dialects
+POSTGRES_DIALECT = "postgresql"
