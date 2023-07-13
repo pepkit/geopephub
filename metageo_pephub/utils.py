@@ -6,6 +6,7 @@ import peppy
 
 GSE_LINK = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={}"
 
+
 class FunctionTimeoutError(Exception):
     """
     Time out error when function is running too long
@@ -72,7 +73,9 @@ def add_link_to_description(gse: str, pep: peppy.Project) -> peppy.Project:
     :param pep: peppy project
     :return: peppy project
     """
-    new_description = f"Data from [GEO {gse}]({GSE_LINK.format(gse)})\n{pep.description}"
+    new_description = (
+        f"Data from [GEO {gse}]({GSE_LINK.format(gse)})\n{pep.description}"
+    )
     pep.description = new_description
     pep.name = gse.lower()
     return pep

@@ -6,6 +6,7 @@ from typing import NoReturn, Dict
 import datetime
 import logmuse
 import coloredlogs
+
 # from update_status import UploadStatusConnection
 from db_utils import BaseEngine
 from models import StatusModel, CycleModel
@@ -39,8 +40,8 @@ def metageo_main(
     port: int = 5432,
     tag: str = None,
     cycle_count: int = None,
-    start_period = None,
-    end_period = None,
+    start_period=None,
+    end_period=None,
 ):
     """
     :param target: Namespace of the projects [bedbase, geo]
@@ -283,9 +284,14 @@ def upload_queued_projects(
         # this_cycle.number_of_successes = status_dict.get("success") + status_dict.get(
         #     "warning"
         # )
-        this_cycle.number_of_successes = status_db_connection.get_number_samples_success(this_cycle.id) + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        this_cycle.number_of_successes = (
+            status_db_connection.get_number_samples_success(this_cycle.id)
+            + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        )
         # this_cycle.number_of_failures = status_dict.get("failure")
-        this_cycle.number_of_failures = status_db_connection.get_number_samples_failures(this_cycle.id)
+        this_cycle.number_of_failures = (
+            status_db_connection.get_number_samples_failures(this_cycle.id)
+        )
 
         this_cycle.status = "success"
 
@@ -366,7 +372,9 @@ def _upload_gse_project(
             _LOGGER.info(
                 f"Namespace = {target} ; Project_name = {pep_name} ; Tag = {pep_tag}"
             )
-            project_dict[prj_name] = add_link_to_description(gse=prj_name_list[0], pep=project_dict[prj_name])
+            project_dict[prj_name] = add_link_to_description(
+                gse=prj_name_list[0], pep=project_dict[prj_name]
+            )
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
             try:
@@ -376,6 +384,7 @@ def _upload_gse_project(
                     name=pep_name,
                     tag=pep_tag,
                     overwrite=True,
+                    description=project_dict[prj_name].description,
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
@@ -481,7 +490,9 @@ def check_by_date(
         if cycle_info.status not in ["success", "processing"]:
             raise CycleSuccessException
         else:
-            _LOGGER.info(f"Cycle {start_period}:{end_period} was successful. (Queuing was successful)")
+            _LOGGER.info(
+                f"Cycle {start_period}:{end_period} was successful. (Queuing was successful)"
+            )
             _LOGGER.info(f"Checking sample uploading status...")
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
                 _LOGGER.info(f"All uploads were successful.")
@@ -501,8 +512,13 @@ def check_by_date(
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
                 )
-                cycle_info.number_of_successes = status_db_connection.get_number_samples_success(cycle_info.id) + status_db_connection.get_number_samples_warnings(cycle_info.id)
-                cycle_info.number_of_failures = status_db_connection.get_number_samples_failures(cycle_info.id)
+                cycle_info.number_of_successes = (
+                    status_db_connection.get_number_samples_success(cycle_info.id)
+                    + status_db_connection.get_number_samples_warnings(cycle_info.id)
+                )
+                cycle_info.number_of_failures = (
+                    status_db_connection.get_number_samples_failures(cycle_info.id)
+                )
                 cycle_info.status = "success"
 
                 # cycle_info.number_of_failures = status_dict.get("failure")
@@ -531,6 +547,7 @@ def check_by_date(
             port=port,
             tag=tag,
         )
+
 
 class CycleSuccessException(Exception):
     """Exception, when cycle has status: Failure."""

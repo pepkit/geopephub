@@ -51,6 +51,7 @@ _LOGGER.info("engine was created")
 class Base(DeclarativeBase):
     type_annotation_map = {datetime.datetime: TIMESTAMP(timezone=True)}
 
+
 class BIGSERIAL(BigInteger):
     pass
 
@@ -62,6 +63,7 @@ def compile_bigserial_pg(type_, compiler, **kw):
 
 def deliver_date(context):
     return datetime.datetime.now(datetime.timezone.utc)
+
 
 class CycleModelSA(Base):
     __tablename__ = CYCLE_TABLE_NAME
@@ -150,9 +152,7 @@ class BaseEngine:
         Base.metadata.create_all(engine)
         return None
 
-    def upload_project_log(
-        self, project_status_model: StatusModel
-    ) -> StatusModel:
+    def upload_project_log(self, project_status_model: StatusModel) -> StatusModel:
         """
         Update or upload project (gse) status
 
@@ -164,19 +164,30 @@ class BaseEngine:
 
         if project_status_model.id:
             if self.project_status_exists(project_status_model.id):
-                statement = update(ProjectModelSA).where(ProjectModelSA.id == project_status_model.id).values(
-                    project_status_model.dict(exclude_unset=True, exclude_none=True, exclude={'id'}))
+                statement = (
+                    update(ProjectModelSA)
+                    .where(ProjectModelSA.id == project_status_model.id)
+                    .values(
+                        project_status_model.dict(
+                            exclude_unset=True, exclude_none=True, exclude={"id"}
+                        )
+                    )
+                )
                 with Session(self._engine) as session:
                     session.execute(statement)
                     session.commit()
 
                 return project_status_model
             else:
-                raise ValueError(f"Cycle {project_status_model.id} does not exists in the database")
+                raise ValueError(
+                    f"Cycle {project_status_model.id} does not exists in the database"
+                )
 
         else:
             new_projects_status = ProjectModelSA(
-                **project_status_model.dict(exclude_unset=True, exclude_none=True, exclude={'id'})
+                **project_status_model.dict(
+                    exclude_unset=True, exclude_none=True, exclude={"id"}
+                )
             )
 
             with Session(self._engine) as session:
@@ -221,7 +232,7 @@ class BaseEngine:
             _LOGGER.info("Getting queued projects")
             statement = (
                 select(ProjectModelSA)
-                .where(ProjectModelSA.status != 'success')
+                .where(ProjectModelSA.status != "success")
                 .where(ProjectModelSA.upload_cycle_id == cycle_id)
             )
             results = session.scalars(statement).all()
@@ -241,15 +252,23 @@ class BaseEngine:
 
         if cycle_model.id:
             if self.cycle_exists(cycle_model.id):
-                cycle_model_dict = cycle_model.dict(exclude_unset=True, exclude_none=True, exclude={'id'})
-                statement = update(CycleModelSA).where(CycleModelSA.id == cycle_model.id).values(**cycle_model_dict)
+                cycle_model_dict = cycle_model.dict(
+                    exclude_unset=True, exclude_none=True, exclude={"id"}
+                )
+                statement = (
+                    update(CycleModelSA)
+                    .where(CycleModelSA.id == cycle_model.id)
+                    .values(**cycle_model_dict)
+                )
                 with Session(self._engine) as session:
                     session.execute(statement)
                     session.commit()
 
                 return cycle_model
             else:
-                raise ValueError(f"Cycle {cycle_model.id} does not exists in the database")
+                raise ValueError(
+                    f"Cycle {cycle_model.id} does not exists in the database"
+                )
 
         else:
             new_cycle = CycleModelSA(
@@ -280,7 +299,9 @@ class BaseEngine:
             queued_cycles = results.all()
             queued_cycles_py_model = []
             for queued_cycle in queued_cycles:
-                queued_cycles_py_model.append(CycleModel(**self.sa_object_as_dict(queued_cycle)))
+                queued_cycles_py_model.append(
+                    CycleModel(**self.sa_object_as_dict(queued_cycle))
+                )
             return queued_cycles_py_model
 
     def get_number_samples_success(self, cycle_id: int):
@@ -368,7 +389,9 @@ class BaseEngine:
 
     def cycle_exists(self, cycle_id):
         with Session(self._engine) as session:
-            found_prj = session.execute(select(CycleModelSA).where(CycleModelSA.id == cycle_id)).all()
+            found_prj = session.execute(
+                select(CycleModelSA).where(CycleModelSA.id == cycle_id)
+            ).all()
             if len(found_prj) > 0:
                 return True
             else:
@@ -376,14 +399,13 @@ class BaseEngine:
 
     def project_status_exists(self, project_status_id):
         with Session(self._engine) as session:
-            found_prj = session.execute(select(ProjectModelSA).where(ProjectModelSA.id == project_status_id)).all()
+            found_prj = session.execute(
+                select(ProjectModelSA).where(ProjectModelSA.id == project_status_id)
+            ).all()
             if len(found_prj) > 0:
                 return True
             else:
                 return False
 
     def sa_object_as_dict(self, obj):
-        return {
-            c.key: getattr(obj, c.key)
-            for c in inspect(obj).mapper.column_attrs
-        }
+        return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
