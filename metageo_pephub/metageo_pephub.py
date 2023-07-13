@@ -382,10 +382,10 @@ def _upload_gse_project(
                     project=project_dict[prj_name],
                     namespace=target,
                     name=pep_name,
-                    tag=pep_tag,
+                    tag="default",
                     overwrite=True,
                     description=project_dict[prj_name].description,
-                    pep_schema="pep/2.0.0",
+                    pep_schema="pep/2.1.0",
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
