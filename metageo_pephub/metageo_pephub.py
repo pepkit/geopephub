@@ -385,6 +385,7 @@ def _upload_gse_project(
                     tag=pep_tag,
                     overwrite=True,
                     description=project_dict[prj_name].description,
+                    pep_schema="pep/2.0.0",
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
