@@ -1,5 +1,5 @@
 geofetch>=0.12.0
-pepdbagent>=0.5.2
+pepdbagent @ git+https://github.com/pepkit/pepdbagent@dev#egg=pepdbagent
 sqlalchemy>=0.2.0
 logmuse>=0.2.7
 coloredlogs>=15.0.1
