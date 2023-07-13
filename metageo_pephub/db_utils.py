@@ -168,6 +168,7 @@ class BaseEngine:
                     project_status_model.dict(exclude_unset=True, exclude_none=True, exclude={'id'}))
                 with Session(self._engine) as session:
                     session.execute(statement)
+                    session.commit()
 
                 return project_status_model
             else:
@@ -220,10 +221,10 @@ class BaseEngine:
             _LOGGER.info("Getting queued projects")
             statement = (
                 select(ProjectModelSA)
-                .where(ProjectModelSA.status != "success")
-                .where(ProjectModelSA.id == cycle_id)
+                .where(ProjectModelSA.status != 'success')
+                .where(ProjectModelSA.upload_cycle_id == cycle_id)
             )
-            results = session.scalars(statement)
+            results = session.scalars(statement).all()
             for result in results:
                 list_of_status.append(StatusModel(**self.sa_object_as_dict(result)))
 

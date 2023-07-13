@@ -481,8 +481,8 @@ def check_by_date(
         if cycle_info.status not in ["success", "processing"]:
             raise CycleSuccessException
         else:
-            _LOGGER.info(f"Cycle {start_period}:{end_period} was successful.")
-            _LOGGER.info(f"Checking sample success.")
+            _LOGGER.info(f"Cycle {start_period}:{end_period} was successful. (Queuing was successful)")
+            _LOGGER.info(f"Checking sample uploading status...")
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
                 _LOGGER.info(f"All uploads were successful.")
             else:
