@@ -6,7 +6,9 @@ from typing import NoReturn, Dict
 import datetime
 import logmuse
 import coloredlogs
-from update_status import UploadStatusConnection
+
+# from update_status import UploadStatusConnection
+from db_utils import BaseEngine
 from models import StatusModel, CycleModel
 from utils import run_geofetch, add_link_to_description
 from sqlalchemy.exc import NoResultFound
@@ -38,8 +40,8 @@ def metageo_main(
     port: int = 5432,
     tag: str = None,
     cycle_count: int = None,
-    start_period = None,
-    end_period = None,
+    start_period=None,
+    end_period=None,
 ):
     """
     :param target: Namespace of the projects [bedbase, geo]
@@ -75,15 +77,6 @@ def metageo_main(
         )
     elif function == "insert_one":
         ...
-    elif function == "create_status_table":
-        connection = UploadStatusConnection(
-            database=db,
-            host=host,
-            user=user,
-            password=password,
-            port=port,
-        )
-        connection.create_table()
 
     elif function == "run_checker":
         run_upload_checker(
@@ -141,7 +134,7 @@ def add_to_queue_by_period(
     :param end_period: end date of cycle [e.g. 2023/02/08]
     :return: NoReturn
     """
-    status_db_connection = UploadStatusConnection(
+    status_db_connection = BaseEngine(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -192,7 +185,7 @@ def add_to_queue_by_period(
             registry_path=f"{target}/{gse}:{tag}",
             upload_cycle_id=this_cycle.id,
         )
-        model_l = status_db_connection.upload_gse_log(model_l)
+        model_l = status_db_connection.upload_project_log(model_l)
         log_model_dict[gse] = model_l
 
         _LOGGER.info(f"GSE: '{gse}' was added to the queue! Target: {target}")
@@ -265,7 +258,7 @@ def upload_queued_projects(
     agent = pepdbagent.PEPDatabaseAgent(
         host=host, port=port, database=db, user=user, password=password
     )
-    status_db_connection = UploadStatusConnection(
+    status_db_connection = BaseEngine(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -291,9 +284,14 @@ def upload_queued_projects(
         # this_cycle.number_of_successes = status_dict.get("success") + status_dict.get(
         #     "warning"
         # )
-        this_cycle.number_of_successes = status_db_connection.get_number_samples_success(this_cycle.id) + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        this_cycle.number_of_successes = (
+            status_db_connection.get_number_samples_success(this_cycle.id)
+            + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        )
         # this_cycle.number_of_failures = status_dict.get("failure")
-        this_cycle.number_of_failures = status_db_connection.get_number_samples_failures(this_cycle.id)
+        this_cycle.number_of_failures = (
+            status_db_connection.get_number_samples_failures(this_cycle.id)
+        )
 
         this_cycle.status = "success"
 
@@ -338,7 +336,7 @@ def _upload_gse_project(
 
         gse_log.status = "processing"
         gse_log.log_stage = 1
-        log_connection.upload_gse_log(gse_log)
+        log_connection.upload_project_log(gse_log)
 
         process_nb += 1
         _LOGGER.info(f"\033[0;33mProcessing GSE: {gse}. {process_nb}/{total_nb}\033[0m")
@@ -351,7 +349,7 @@ def _upload_gse_project(
         except Exception as err:
             gse_log.status = "failure"
             gse_log.info = str(err)
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
             status_dict["failure"] += 1
             continue
 
@@ -359,7 +357,7 @@ def _upload_gse_project(
             gse_log.status = "warning"
             gse_log.info = "No data was fetched from GEO, check if project has any data"
             gse_log.status_info = "geofetcher"
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
             status_dict["warning"] += 1
             continue
 
@@ -369,31 +367,39 @@ def _upload_gse_project(
             pep_tag = prj_name_list[1]
 
             gse_log.registry_path = f"{target}/{pep_name}:{pep_tag}"
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
 
             _LOGGER.info(
                 f"Namespace = {target} ; Project_name = {pep_name} ; Tag = {pep_tag}"
             )
-            project_dict[prj_name] = add_link_to_description(gse=prj_name_list[0], pep=project_dict[prj_name])
+            project_dict[prj_name] = add_link_to_description(
+                gse=prj_name_list[0], pep=project_dict[prj_name]
+            )
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
+            if target == 'bedbase':
+                tag = pep_tag
+            else:
+                tag = "default"
             try:
                 agent.project.create(
                     project=project_dict[prj_name],
                     namespace=target,
                     name=pep_name,
-                    tag=pep_tag,
+                    tag=tag,
                     overwrite=True,
+                    description=project_dict[prj_name].description,
+                    pep_schema="pep/2.1.0",
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
-                log_connection.upload_gse_log(gse_log)
+                log_connection.upload_project_log(gse_log)
 
                 status_dict["success"] += 1
             except Exception as err:
                 gse_log.status = "failure"
                 gse_log.info = str(err)
-                log_connection.upload_gse_log(gse_log)
+                log_connection.upload_project_log(gse_log)
 
                 status_dict["failure"] += 1
 
@@ -469,7 +475,7 @@ def check_by_date(
     :param tag: tag of the projects
     :return: NoReturn
     """
-    status_db_connection = UploadStatusConnection(
+    status_db_connection = BaseEngine(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -483,11 +489,16 @@ def check_by_date(
             target=target, start_period=start_period, end_period=end_period
         )
 
+        if not cycle_info:
+            raise NoResultFound
+
         if cycle_info.status not in ["success", "processing"]:
             raise CycleSuccessException
         else:
-            _LOGGER.info(f"Cycle {start_period}:{end_period} was successful.")
-            _LOGGER.info(f"Checking sample success.")
+            _LOGGER.info(
+                f"Cycle {start_period}:{end_period} was successful. (Queuing was successful)"
+            )
+            _LOGGER.info(f"Checking sample uploading status...")
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
                 _LOGGER.info(f"All uploads were successful.")
             else:
@@ -506,8 +517,13 @@ def check_by_date(
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
                 )
-                cycle_info.number_of_successes = status_db_connection.get_number_samples_success(cycle_info.id) + status_db_connection.get_number_samples_warnings(cycle_info.id)
-                cycle_info.number_of_failures = status_db_connection.get_number_samples_failures(cycle_info.id)
+                cycle_info.number_of_successes = (
+                    status_db_connection.get_number_samples_success(cycle_info.id)
+                    + status_db_connection.get_number_samples_warnings(cycle_info.id)
+                )
+                cycle_info.number_of_failures = (
+                    status_db_connection.get_number_samples_failures(cycle_info.id)
+                )
                 cycle_info.status = "success"
 
                 # cycle_info.number_of_failures = status_dict.get("failure")
@@ -536,6 +552,7 @@ def check_by_date(
             port=port,
             tag=tag,
         )
+
 
 class CycleSuccessException(Exception):
     """Exception, when cycle has status: Failure."""

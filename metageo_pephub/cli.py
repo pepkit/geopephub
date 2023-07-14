@@ -44,7 +44,6 @@ def _parse_cmdl(cmdl):
             "run_queuer",
             "run_uploader",
             "insert_one",
-            "create_status_table",
             "run_checker",
             "check_by_date",
         ],

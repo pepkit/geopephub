@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlmodel import SQLModel, Field
+from pydantic import BaseModel
 from pydantic import validator
 import datetime
 
@@ -13,8 +13,8 @@ from const import STATUS_TABLE_NAME, STATUS_OPTIONS, CYCLE_TABLE_NAME
 # 3 - Finished
 
 
-class CycleModel(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class CycleModel(BaseModel):
+    id: Optional[int]
     status_date: Optional[datetime.datetime] = datetime.datetime.now()
     target: str
     status: str
@@ -34,26 +34,13 @@ class CycleModel(SQLModel, table=True):
         return value
 
 
-class StatusModel(SQLModel, table=False):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class StatusModel(BaseModel):
+    id: Optional[int]
     gse: str
-    target: str  # TODO: remove it
+    target: Optional[str]  # TODO: remove it
     registry_path: Optional[str]
-    upload_cycle_id: Optional[int] = Field(
-        default=None, foreign_key=f"{CYCLE_TABLE_NAME}.id"
-    )
+    upload_cycle_id: Optional[int]
     log_stage: int
     status: str
     status_info: Optional[str]
     info: Optional[str]
-
-    @validator("status")
-    def status_checker(cls, value):
-        if value not in STATUS_OPTIONS:
-            raise ValueError("Incorrect status value")
-
-        return value
-
-
-class StatusModelSQL(StatusModel, table=True):
-    __tablename__ = STATUS_TABLE_NAME
