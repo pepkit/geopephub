@@ -10,7 +10,6 @@ The Metageo_pephub uploader consists of 3 main functionalities:
 
 More information about these processes can be found in the flowcharts and overview below.
 
-
 ![](./docs/img/populator_overview.svg)
 
 ## Queuer Flowchart:
