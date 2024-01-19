@@ -1,9 +1,8 @@
-#geofetch>=0.12.0
-geofetch @ git+https://github.com/pepkit/geofetch@dev#egg=geofetch
-pepdbagent @ git+https://github.com/pepkit/pepdbagent@70_pep_schemas#egg=pepdbagent
-sqlmodel>=0.0.8
-# pepdbagent>=0.4.1
+geofetch>=0.12.5
+pepdbagent @ git+https://github.com/pepkit/pepdbagent@dev#egg=pepdbagent
+pepdbagent>=0.6.0
+sqlalchemy>=0.2.0
 logmuse>=0.2.7
 coloredlogs>=15.0.1
-peppy>=0.35.5
-
+peppy>=0.35.7
+pephubclient>=0.2.1

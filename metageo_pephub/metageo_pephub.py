@@ -1,7 +1,5 @@
 import geofetch
 import pepdbagent
-import argparse
-import sys
 from typing import NoReturn, Dict
 import datetime
 import logmuse
@@ -38,8 +36,8 @@ def metageo_main(
     port: int = 5432,
     tag: str = None,
     cycle_count: int = None,
-    start_period = None,
-    end_period = None,
+    start_period=None,
+    end_period=None,
 ):
     """
     :param target: Namespace of the projects [bedbase, geo]
@@ -127,7 +125,7 @@ def add_to_queue_by_period(
     start_period: str,
     end_period: str,
     port: int = 5432,
-) -> NoReturn:
+) -> None:
     """
 
     :param target: Namespace of the projects (bedbase, geo)
@@ -200,7 +198,7 @@ def add_to_queue_by_period(
     this_cycle.status = "queued"
     status_db_connection.update_upload_cycle(this_cycle)
 
-    _LOGGER.info(f"================== Finished ==================")
+    _LOGGER.info("================== Finished ==================")
     _LOGGER.info(
         f"\033[32mAfter run report: Added {this_cycle.number_of_projects} projects\033[0m"
     )
@@ -291,9 +289,14 @@ def upload_queued_projects(
         # this_cycle.number_of_successes = status_dict.get("success") + status_dict.get(
         #     "warning"
         # )
-        this_cycle.number_of_successes = status_db_connection.get_number_samples_success(this_cycle.id) + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        this_cycle.number_of_successes = (
+            status_db_connection.get_number_samples_success(this_cycle.id)
+            + status_db_connection.get_number_samples_warnings(this_cycle.id)
+        )
         # this_cycle.number_of_failures = status_dict.get("failure")
-        this_cycle.number_of_failures = status_db_connection.get_number_samples_failures(this_cycle.id)
+        this_cycle.number_of_failures = (
+            status_db_connection.get_number_samples_failures(this_cycle.id)
+        )
 
         this_cycle.status = "success"
 
@@ -347,7 +350,7 @@ def _upload_gse_project(
             gse_log.status_info = "geofetcher"
             gse_log.log_stage = 2
             project_dict = run_geofetch(gse, geofetcher_obj)
-            _LOGGER.info(f"Project has been downloaded using geofetch")
+            _LOGGER.info("Project has been downloaded using geofetch")
         except Exception as err:
             gse_log.status = "failure"
             gse_log.info = str(err)
@@ -374,7 +377,9 @@ def _upload_gse_project(
             _LOGGER.info(
                 f"Namespace = {target} ; Project_name = {pep_name} ; Tag = {pep_tag}"
             )
-            project_dict[prj_name] = add_link_to_description(gse=prj_name_list[0], pep=project_dict[prj_name])
+            project_dict[prj_name] = add_link_to_description(
+                gse=prj_name_list[0], pep=project_dict[prj_name]
+            )
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
             try:
@@ -397,7 +402,7 @@ def _upload_gse_project(
 
                 status_dict["failure"] += 1
 
-    _LOGGER.info(f"================== Finished ==================")
+    _LOGGER.info("================== Finished ==================")
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
     return status_dict
 
@@ -487,9 +492,9 @@ def check_by_date(
             raise CycleSuccessException
         else:
             _LOGGER.info(f"Cycle {start_period}:{end_period} was successful.")
-            _LOGGER.info(f"Checking sample success.")
+            _LOGGER.info("Checking sample success.")
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
-                _LOGGER.info(f"All uploads were successful.")
+                _LOGGER.info("All uploads were successful.")
             else:
                 list_of_failed_prj = status_db_connection.get_failed_project(
                     cycle_info.id
@@ -506,15 +511,20 @@ def check_by_date(
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
                 )
-                cycle_info.number_of_successes = status_db_connection.get_number_samples_success(cycle_info.id) + status_db_connection.get_number_samples_warnings(cycle_info.id)
-                cycle_info.number_of_failures = status_db_connection.get_number_samples_failures(cycle_info.id)
+                cycle_info.number_of_successes = (
+                    status_db_connection.get_number_samples_success(cycle_info.id)
+                    + status_db_connection.get_number_samples_warnings(cycle_info.id)
+                )
+                cycle_info.number_of_failures = (
+                    status_db_connection.get_number_samples_failures(cycle_info.id)
+                )
                 cycle_info.status = "success"
 
                 # cycle_info.number_of_failures = status_dict.get("failure")
                 status_db_connection.update_upload_cycle(cycle_info)
 
-    except (CycleSuccessException, NoResultFound, IndexError) as err:
-        _LOGGER.warning(f"Result not found, Uploading!")
+    except (CycleSuccessException, NoResultFound, IndexError):
+        _LOGGER.warning("Result not found, Uploading!")
         # return False
         add_to_queue_by_period(
             db=db,
@@ -536,6 +546,7 @@ def check_by_date(
             port=port,
             tag=tag,
         )
+
 
 class CycleSuccessException(Exception):
     """Exception, when cycle has status: Failure."""
