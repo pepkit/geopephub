@@ -27,6 +27,14 @@ jobs:
       - name: Install dev dependencies
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
+      - name: Set environment variables
+        run: |
+          export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+          export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+
       - name: Add to the queue
         run: python metageo_pephub/main.py --target bedbase --period 2 --function run_queuer
 
