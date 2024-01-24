@@ -79,10 +79,10 @@ def metageo_main(
 
     elif function == "run_checker":
         run_upload_checker(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
+            # db=db,
+            # host=host,
+            # user=user,
+            # password=password,
             target=target,
             period_length=period,
             tag=tag,
@@ -91,10 +91,10 @@ def metageo_main(
 
     elif function == "check_by_date":
         check_by_date(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
+            # db=db,
+            # host=host,
+            # user=user,
+            # password=password,
             target=target,
             tag=tag,
             start_period=start_period,
