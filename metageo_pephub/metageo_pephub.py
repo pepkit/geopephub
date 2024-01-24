@@ -406,15 +406,10 @@ def _upload_gse_project(
 
 
 def run_upload_checker(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
     target: str,
     period_length: int,
     tag: str,
     number_of_cycles: int = 1,
-    port: int = 5432,
 ) -> NoReturn:
     """
     Check if previous run (cycle) was successful.
@@ -436,28 +431,18 @@ def run_upload_checker(
     start_period = start_date.strftime("%Y/%m/%d")
     end_period = today_date.strftime("%Y/%m/%d")
     check_by_date(
-        db=db,
-        host=host,
-        user=user,
-        password=password,
         target=target,
         start_period=start_period,
         end_period=end_period,
         tag=tag,
-        port=port,
     )
 
 
 def check_by_date(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
     target: str,
     start_period: str,
     end_period: str,
     tag: str,
-    port: int = 5432,
 ) -> NoReturn:
     """
     Check if previous run (cycle) was successful.
@@ -472,9 +457,7 @@ def check_by_date(
     :param tag: tag of the projects
     :return: NoReturn
     """
-    status_db_connection = BaseEngine(
-        host=host, port=port, database=db, user=user, password=password
-    )
+    status_db_connection = get_base_db_engine()
 
     today_date = datetime.datetime.strptime(end_period, "%Y/%m/%d")
     start_date = datetime.datetime.strptime(start_period, "%Y/%m/%d")
