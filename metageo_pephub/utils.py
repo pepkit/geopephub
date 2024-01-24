@@ -124,4 +124,3 @@ def get_base_db_engine() -> BaseEngine:
         database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
         port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
     )
-
