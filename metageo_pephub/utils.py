@@ -60,7 +60,10 @@ def run_geofetch(
     :return: dict of peppys
     """
     if not geofetcher_obj:
-        geofetcher_obj = geofetch.Geofetcher()
+        geofetcher_obj = geofetch.Geofetcher(const_limit_discard=1500,
+        attr_limit_truncate=1000,
+        const_limit_project=200,
+    )
     project_dict = geofetcher_obj.get_projects(gse)
     return project_dict
 
@@ -77,4 +80,5 @@ def add_link_to_description(gse: str, pep: peppy.Project) -> peppy.Project:
         f"Data from [GEO {gse}]({GSE_LINK.format(gse)})\n{pep.description}"
     )
     pep.description = new_description
+    pep.name = gse.lower()
     return pep

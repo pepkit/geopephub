@@ -1,10 +1,14 @@
 import geofetch
 import pepdbagent
+import argparse
+import sys
 from typing import NoReturn, Dict
 import datetime
 import logmuse
 import coloredlogs
-from update_status import UploadStatusConnection
+
+# from update_status import UploadStatusConnection
+from db_utils import BaseEngine
 from models import StatusModel, CycleModel
 from utils import run_geofetch, add_link_to_description
 from sqlalchemy.exc import NoResultFound
@@ -73,15 +77,6 @@ def metageo_main(
         )
     elif function == "insert_one":
         ...
-    elif function == "create_status_table":
-        connection = UploadStatusConnection(
-            database=db,
-            host=host,
-            user=user,
-            password=password,
-            port=port,
-        )
-        connection.create_table()
 
     elif function == "run_checker":
         run_upload_checker(
@@ -125,7 +120,7 @@ def add_to_queue_by_period(
     start_period: str,
     end_period: str,
     port: int = 5432,
-) -> None:
+) -> NoReturn:
     """
 
     :param target: Namespace of the projects (bedbase, geo)
@@ -139,7 +134,7 @@ def add_to_queue_by_period(
     :param end_period: end date of cycle [e.g. 2023/02/08]
     :return: NoReturn
     """
-    status_db_connection = UploadStatusConnection(
+    status_db_connection = BaseEngine(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -190,7 +185,7 @@ def add_to_queue_by_period(
             registry_path=f"{target}/{gse}:{tag}",
             upload_cycle_id=this_cycle.id,
         )
-        model_l = status_db_connection.upload_gse_log(model_l)
+        model_l = status_db_connection.upload_project_log(model_l)
         log_model_dict[gse] = model_l
 
         _LOGGER.info(f"GSE: '{gse}' was added to the queue! Target: {target}")
@@ -198,7 +193,7 @@ def add_to_queue_by_period(
     this_cycle.status = "queued"
     status_db_connection.update_upload_cycle(this_cycle)
 
-    _LOGGER.info("================== Finished ==================")
+    _LOGGER.info(f"================== Finished ==================")
     _LOGGER.info(
         f"\033[32mAfter run report: Added {this_cycle.number_of_projects} projects\033[0m"
     )
@@ -263,7 +258,7 @@ def upload_queued_projects(
     agent = pepdbagent.PEPDatabaseAgent(
         host=host, port=port, database=db, user=user, password=password
     )
-    status_db_connection = UploadStatusConnection(
+    status_db_connection = BaseEngine(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -341,7 +336,7 @@ def _upload_gse_project(
 
         gse_log.status = "processing"
         gse_log.log_stage = 1
-        log_connection.upload_gse_log(gse_log)
+        log_connection.upload_project_log(gse_log)
 
         process_nb += 1
         _LOGGER.info(f"\033[0;33mProcessing GSE: {gse}. {process_nb}/{total_nb}\033[0m")
@@ -350,11 +345,11 @@ def _upload_gse_project(
             gse_log.status_info = "geofetcher"
             gse_log.log_stage = 2
             project_dict = run_geofetch(gse, geofetcher_obj)
-            _LOGGER.info("Project has been downloaded using geofetch")
+            _LOGGER.info(f"Project has been downloaded using geofetch")
         except Exception as err:
             gse_log.status = "failure"
             gse_log.info = str(err)
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
             status_dict["failure"] += 1
             continue
 
@@ -362,7 +357,7 @@ def _upload_gse_project(
             gse_log.status = "warning"
             gse_log.info = "No data was fetched from GEO, check if project has any data"
             gse_log.status_info = "geofetcher"
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
             status_dict["warning"] += 1
             continue
 
@@ -372,7 +367,7 @@ def _upload_gse_project(
             pep_tag = prj_name_list[1]
 
             gse_log.registry_path = f"{target}/{pep_name}:{pep_tag}"
-            log_connection.upload_gse_log(gse_log)
+            log_connection.upload_project_log(gse_log)
 
             _LOGGER.info(
                 f"Namespace = {target} ; Project_name = {pep_name} ; Tag = {pep_tag}"
@@ -382,27 +377,33 @@ def _upload_gse_project(
             )
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
+            if target == 'bedbase':
+                tag = pep_tag
+            else:
+                tag = "default"
             try:
                 agent.project.create(
                     project=project_dict[prj_name],
                     namespace=target,
                     name=pep_name,
-                    tag=pep_tag,
+                    tag=tag,
                     overwrite=True,
+                    description=project_dict[prj_name].description,
+                    pep_schema="pep/2.1.0",
                 )
                 gse_log.status = "success"
                 gse_log.info = ""
-                log_connection.upload_gse_log(gse_log)
+                log_connection.upload_project_log(gse_log)
 
                 status_dict["success"] += 1
             except Exception as err:
                 gse_log.status = "failure"
                 gse_log.info = str(err)
-                log_connection.upload_gse_log(gse_log)
+                log_connection.upload_project_log(gse_log)
 
                 status_dict["failure"] += 1
 
-    _LOGGER.info("================== Finished ==================")
+    _LOGGER.info(f"================== Finished ==================")
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
     return status_dict
 
@@ -474,7 +475,7 @@ def check_by_date(
     :param tag: tag of the projects
     :return: NoReturn
     """
-    status_db_connection = UploadStatusConnection(
+    status_db_connection = BaseEngine(
         host=host, port=port, database=db, user=user, password=password
     )
 
@@ -488,13 +489,18 @@ def check_by_date(
             target=target, start_period=start_period, end_period=end_period
         )
 
+        if not cycle_info:
+            raise NoResultFound
+
         if cycle_info.status not in ["success", "processing"]:
             raise CycleSuccessException
         else:
-            _LOGGER.info(f"Cycle {start_period}:{end_period} was successful.")
-            _LOGGER.info("Checking sample success.")
+            _LOGGER.info(
+                f"Cycle {start_period}:{end_period} was successful. (Queuing was successful)"
+            )
+            _LOGGER.info(f"Checking sample uploading status...")
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
-                _LOGGER.info("All uploads were successful.")
+                _LOGGER.info(f"All uploads were successful.")
             else:
                 list_of_failed_prj = status_db_connection.get_failed_project(
                     cycle_info.id
@@ -523,8 +529,8 @@ def check_by_date(
                 # cycle_info.number_of_failures = status_dict.get("failure")
                 status_db_connection.update_upload_cycle(cycle_info)
 
-    except (CycleSuccessException, NoResultFound, IndexError):
-        _LOGGER.warning("Result not found, Uploading!")
+    except (CycleSuccessException, NoResultFound, IndexError) as err:
+        _LOGGER.warning(f"Result not found, Uploading!")
         # return False
         add_to_queue_by_period(
             db=db,
