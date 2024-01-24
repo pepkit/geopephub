@@ -13,6 +13,7 @@ from const import (
     DEFAULT_POSTGRES_DB,
     DEFAULT_POSTGRES_PORT,
 )
+from db_utils import BaseEngine
 
 GSE_LINK = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={}"
 
@@ -109,3 +110,18 @@ def get_agent() -> PEPDatabaseAgent:
         database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
         port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
     )
+
+
+def get_base_db_engine() -> BaseEngine:
+    """
+    Get BaseEngine object
+    :return: BaseEngine
+    """
+    return BaseEngine(
+        user=os.environ.get("POSTGRES_USER") or DEFAULT_POSTGRES_USER,
+        password=os.environ.get("POSTGRES_PASSWORD") or DEFAULT_POSTGRES_PASSWORD,
+        host=os.environ.get("POSTGRES_HOST") or DEFAULT_POSTGRES_HOST,
+        database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
+        port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
+    )
+

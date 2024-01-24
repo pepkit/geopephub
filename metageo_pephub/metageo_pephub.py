@@ -16,6 +16,7 @@ from datetime import timedelta
 import peppy
 
 from const import LAST_UPDATE_DATES
+from utils import get_agent, get_base_db_engine
 
 
 _LOGGER = logmuse.init_logger("geo_to_pephub")
@@ -28,14 +29,14 @@ coloredlogs.install(
 
 def metageo_main(
     target: str,
-    db: str,
-    host: str,
-    user: str,
-    password: str,
+    # db: str,
+    # host: str,
+    # user: str,
+    # password: str,
     function: str,
     gse: str = None,
     period: int = 1,
-    port: int = 5432,
+    # port: int = 5432,
     tag: str = None,
     cycle_count: int = None,
     start_period=None,
@@ -56,20 +57,20 @@ def metageo_main(
     """
     if function == "run_queuer":
         add_to_queue(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
+            # db=db,
+            # host=host,
+            # user=user,
+            # password=password,
             target=target,
             tag=tag,
             period=period,
         )
     elif function == "run_uploader":
         upload_queued_projects(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
+            # db=db,
+            # host=host,
+            # user=user,
+            # password=password,
             target=target,
             tag=tag,
         )
@@ -109,15 +110,15 @@ def metageo_main(
 
 
 def add_to_queue_by_period(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
+    # db: str,
+    # host: str,
+    # user: str,
+    # password: str,
     target: str,
     tag: str,
     start_period: str,
     end_period: str,
-    port: int = 5432,
+    # port: int = 5432,
 ) -> None:
     """
 
@@ -132,9 +133,7 @@ def add_to_queue_by_period(
     :param end_period: end date of cycle [e.g. 2023/02/08]
     :return: NoReturn
     """
-    status_db_connection = BaseEngine(
-        host=host, port=port, database=db, user=user, password=password
-    )
+    status_db_connection = get_base_db_engine()
 
     time_now = datetime.datetime.now()
 
@@ -198,14 +197,14 @@ def add_to_queue_by_period(
 
 
 def add_to_queue(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
+    # db: str,
+    # host: str,
+    # user: str,
+    # password: str,
     target: str,
     tag: str,
     period: int = LAST_UPDATE_DATES,
-    port: int = 5432,
+    # port: int = 5432,
 ) -> NoReturn:
     """
 
@@ -225,25 +224,25 @@ def add_to_queue(
     start_date_str = start_date.strftime("%Y/%m/%d")
 
     add_to_queue_by_period(
-        db=db,
-        host=host,
-        user=user,
-        password=password,
+        # db=db,
+        # host=host,
+        # user=user,
+        # password=password,
         target=target,
         tag=tag,
         start_period=start_date_str,
         end_period=end_date_str,
-        port=port,
+        # port=port,
     )
 
 
 def upload_queued_projects(
     target: str,
-    db: str,
-    host: str,
-    user: str,
-    password: str,
-    port: int = 5432,
+    # db: str,
+    # host: str,
+    # user: str,
+    # password: str,
+    # port: int = 5432,
     tag: str = None,
 ) -> None:
     # LOG info
@@ -253,12 +252,12 @@ def upload_queued_projects(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
-    agent = pepdbagent.PEPDatabaseAgent(
-        host=host, port=port, database=db, user=user, password=password
-    )
-    status_db_connection = BaseEngine(
-        host=host, port=port, database=db, user=user, password=password
-    )
+
+    agent = get_agent()
+    # status_db_connection = BaseEngine(
+    #     host=host, port=port, database=db, user=user, password=password
+    # )
+    status_db_connection = get_base_db_engine()
 
     list_of_cycles = status_db_connection.get_queued_cycle(target=target)
 
@@ -508,9 +507,7 @@ def check_by_date(
                 for gse_log_item in list_of_failed_prj:
                     log_model_dict[gse_log_item.gse] = gse_log_item
 
-                agent = pepdbagent.PEPDatabaseAgent(
-                    host=host, port=port, database=db, user=user, password=password
-                )
+                agent = get_agent()
 
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
@@ -531,23 +528,23 @@ def check_by_date(
         _LOGGER.warning("Result not found, Uploading!")
         # return False
         add_to_queue_by_period(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
+            # db=db,
+            # host=host,
+            # user=user,
+            # password=password,
             target=target,
             start_period=start_period,
             end_period=end_period,
-            port=port,
+            # port=port,
             tag=tag,
         )
         upload_queued_projects(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
+            # db=db,
+            # host=host,
+            # user=user,
+            # password=password,
             target=target,
-            port=port,
+            # port=port,
             tag=tag,
         )
 

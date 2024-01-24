@@ -9,32 +9,32 @@ def _parse_cmdl(cmdl):
     parser_one_inserter = parser.add_argument_group("inserter_one")
     parser_check_by_date = parser.add_argument_group("check_by_date")
 
-    parser.add_argument(
-        "--host",
-        required=True,
-        help="Host of the db",
-    )
-    parser.add_argument(
-        "--db",
-        required=True,
-        help="db_name of the db",
-    )
-    parser.add_argument(
-        "--user",
-        required=True,
-        help="Username of the db",
-    )
-    parser.add_argument(
-        "--password",
-        required=True,
-        help="password of the db",
-    )
-    parser.add_argument(
-        "--port",
-        required=False,
-        default=5432,
-        help="port of the db",
-    )
+    # parser.add_argument(
+    #     "--host",
+    #     required=True,
+    #     help="Host of the db",
+    # )
+    # parser.add_argument(
+    #     "--db",
+    #     required=True,
+    #     help="db_name of the db",
+    # )
+    # parser.add_argument(
+    #     "--user",
+    #     required=True,
+    #     help="Username of the db",
+    # )
+    # parser.add_argument(
+    #     "--password",
+    #     required=True,
+    #     help="password of the db",
+    # )
+    # parser.add_argument(
+    #     "--port",
+    #     required=False,
+    #     default=5432,
+    #     help="port of the db",
+    # )
 
     parser.add_argument(
         "-f",

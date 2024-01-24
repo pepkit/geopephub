@@ -28,7 +28,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Add to the queue
-        run: python metageo_pephub/main.py --target bedbase --period 2 --function run_queuer --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python metageo_pephub/main.py --target bedbase --period 2 --function run_queuer
 
       - name: Add to the database
-        run: python metageo_pephub/main.py --target bedbase --function run_uploader --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }}
+        run: python metageo_pephub/main.py --target bedbase --function run_uploader
