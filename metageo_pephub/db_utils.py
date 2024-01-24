@@ -1,14 +1,8 @@
-from typing import Optional, List, Union
-
-# from sqlmodel import SQLModel, Field
-# from pydantic import validator
-
+from typing import Optional, List
 
 from sqlalchemy import (
     BigInteger,
-    Result,
     TIMESTAMP,
-    ForeignKey,
     select,
     update,
 )
@@ -19,7 +13,6 @@ from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
-    relationship,
     Session,
 )
 
@@ -168,7 +161,7 @@ class BaseEngine:
                     update(ProjectModelSA)
                     .where(ProjectModelSA.id == project_status_model.id)
                     .values(
-                        project_status_model.dict(
+                        project_status_model.model_dump(
                             exclude_unset=True, exclude_none=True, exclude={"id"}
                         )
                     )
@@ -185,7 +178,7 @@ class BaseEngine:
 
         else:
             new_projects_status = ProjectModelSA(
-                **project_status_model.dict(
+                **project_status_model.model_dump(
                     exclude_unset=True, exclude_none=True, exclude={"id"}
                 )
             )
@@ -252,7 +245,7 @@ class BaseEngine:
 
         if cycle_model.id:
             if self.cycle_exists(cycle_model.id):
-                cycle_model_dict = cycle_model.dict(
+                cycle_model_dict = cycle_model.model_dump(
                     exclude_unset=True, exclude_none=True, exclude={"id"}
                 )
                 statement = (
@@ -272,7 +265,7 @@ class BaseEngine:
 
         else:
             new_cycle = CycleModelSA(
-                **cycle_model.dict(exclude_unset=True, exclude_none=True)
+                **cycle_model.model_dump(exclude_unset=True, exclude_none=True)
             )
 
             with Session(self._engine) as session:

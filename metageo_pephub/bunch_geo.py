@@ -1,34 +1,32 @@
 # This script aims to provide a simple way to get a list of all the PEPs in a
 # PEPhub from GEO namespace, download them and zip into a single file.
-from pephubclient import PEPHubClient
-from pepdbagent import PEPDatabaseAgent
+from pephubclient.helpers import save_pep
 from datetime import datetime
+from utils import get_agent
 
 
-def main(host, password, user, port=5432, db="pephub"):
-    agent = PEPDatabaseAgent(
-        host=host, port=port, database=db, user=user, password=password
+def main():
+    agent = get_agent()
+    # client = PEPHubClient()
+
+    list_of_all_geo = agent.annotation.get_projects_list(
+        namespace="geo", limit=10000, order_by="update_date"
     )
-    client = PEPHubClient()
 
-    list_of_all_geo = agent.annotation.get(
-        namespace="geo", limit=2000, order_by="update_date"
-    )
-    for geo in list_of_all_geo.results:
+    for geo in list_of_all_geo:
         prj = agent.project.get(namespace="geo", name=geo.name, tag=geo.tag, raw=True)
-        client._save_raw_pep(
-            f"{geo.namespace}/{geo.name}:{geo.tag}",
+        save_pep(
             prj,
-            just_name=True,
             project_path="/home/alex/databio/repos/metageo_pephub/kinga_folder",
             force=True,
+            zip=True,
         )
         # print(prj)
 
 
 if __name__ == "__main__":
     start_time = datetime.now()
-    # run main here!
+    main()
     end_time = datetime.now()
     duration = end_time - start_time
 
