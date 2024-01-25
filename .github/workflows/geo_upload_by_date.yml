@@ -35,7 +35,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Upload Projects of specified period
-        run: python metageo_pephub/main.py --target ${{ inputs.target }} --function check_by_date --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}
+        run: python metageo_pephub/main.py check_by_date --target ${{ inputs.target }} --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}

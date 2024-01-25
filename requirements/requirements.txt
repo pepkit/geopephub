@@ -8,3 +8,4 @@ peppy>=0.35.7
 pephubclient>=0.2.1
 pydantic>=2.5.0
 python-dotenv
+typer>=0.9.0

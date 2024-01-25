@@ -1,114 +1,150 @@
-from argparse import ArgumentParser
+import typer
+from metageo_pephub import (
+    add_to_queue,
+    upload_queued_projects,
+    run_upload_checker,
+    check_by_date as check_by_date_function,
+)
+from __version__ import __version__
+
+app = typer.Typer()
 
 
-def _parse_cmdl(cmdl):
-    parser = ArgumentParser(
-        description="metageo_pephub pipline runer",
-    )
-    parser_checker = parser.add_argument_group("checker")
-    parser_one_inserter = parser.add_argument_group("inserter_one")
-    parser_check_by_date = parser.add_argument_group("check_by_date")
+def validate_target(value: str):
+    valid_target = ["geo", "bedbase"]
+    if value.lower() not in valid_target:
+        raise typer.BadParameter(
+            f"Invalid color '{value}'. Choose from: {', '.join(valid_target)}"
+        )
+    return value.lower()
 
-    # parser.add_argument(
-    #     "--host",
-    #     required=True,
-    #     help="Host of the db",
-    # )
-    # parser.add_argument(
-    #     "--db",
-    #     required=True,
-    #     help="db_name of the db",
-    # )
-    # parser.add_argument(
-    #     "--user",
-    #     required=True,
-    #     help="Username of the db",
-    # )
-    # parser.add_argument(
-    #     "--password",
-    #     required=True,
-    #     help="password of the db",
-    # )
-    # parser.add_argument(
-    #     "--port",
-    #     required=False,
-    #     default=5432,
-    #     help="port of the db",
-    # )
 
-    parser.add_argument(
-        "-f",
-        "--function",
-        required=True,
-        choices=[
-            "run_queuer",
-            "run_uploader",
-            "insert_one",
-            "run_checker",
-            "check_by_date",
-        ],
-        help="Choose which function should metageo should run",
-        type=str,
-    )
+@app.command()
+def run_queuer(
+    target: str = typer.Option(
+        ...,
+        help="Target of the pipeline. Namespace, and purpose of pipeline. Options: ['geo','bedbase']",
+        callback=validate_target,
+    ),
+    tag: str = typer.Option(
+        "default",
+        help="Tag of the project, that will be uploaded to the pephub",
+    ),
+    period: int = typer.Option(
+        1,
+        help="Period (number of day) (time frame) when fetch metadata from GEO [used for q_fetch function]",
+    ),
+):
+    """
+    Queue GEO projects that were uploaded or updated in the last period
+    """
+    add_to_queue(target=target, tag=tag, period=period)
 
-    parser_one_inserter.add_argument(
-        "-g",
-        "--gse",
-        required=False,
-        help="GSE number that has to be inserted [only used when function 'insert_one' was chosen]",
-        type=str,
-    )
 
-    parser.add_argument(
-        "-p",
-        "--period",
-        required=False,
-        default=1,
-        help="Period - number of days (time frame) when fetch metadata from GEO [used for q_fetch function]",
-        type=int,
+@app.command()
+def run_uploader(
+    target: str = typer.Option(
+        ...,
+        help="Target of the pipeline. Namespace, and purpose of pipeline. Options: ['geo','bedbase']",
+        callback=validate_target,
+    ),
+    tag: str = typer.Option(
+        "default",
+        help="Tag of the project, that will be uploaded to the pephub",
+    ),
+):
+    """
+    Upload projects that were queued, but not uploaded yet.
+    """
+    upload_queued_projects(
+        target=target,
+        tag=tag,
     )
 
-    parser.add_argument(
-        "--target",
-        required=True,
-        default="Target of the pipeline. Nampespace, and purpose of pipeline",
-        choices=["bedbase", "geo"],
-        help="tag of the project",
-    )
 
-    parser.add_argument(
-        "--tag",
-        required=False,
-        default="default",
-        help="tag of the project",
-    )
-
-    parser_checker.add_argument(
-        "--cycle-count",
-        required=False,
-        default=1,
-        type=int,
+@app.command()
+def run_checker(
+    target: str = typer.Option(
+        ...,
+        help="Target of the pipeline. Namespace, and purpose of pipeline. Options: ['geo','bedbase']",
+        callback=validate_target,
+    ),
+    tag: str = typer.Option(
+        "default",
+        help="Tag of the project, that will be uploaded to the pephub",
+    ),
+    cycle_count: int = typer.Option(
+        1,
         help="Cycle that has to be checked if it was successful"
         " before the earliest one. e.g "
         "if we want to check todays cycle (if cycles are happening every day)"
-        " you should insert 1."
+        " you should insert 0."
         "(2) if you want to specify cycle that was happening 3 week before, and every cycle is happening"
         "once a week, you should set 2",
+    ),
+    period: int = typer.Option(
+        1,
+        help="length of the period - number of days (time frame) when fetch metadata from GEO [used for q_fetch function]",
+    ),
+):
+    """
+    Check if all projects were uploaded successfully in specified period and upload them if not.
+    To check if all projects were uploaded successfully 3 periods ago, where one period is 1 day, and cycles are happening every day,
+    you should set cycle_count=3, and period_length=1. (geopephub run_checker --cycle-count 3 --period-length 1)
+
+    """
+    run_upload_checker(
+        target=target,
+        period_length=period,
+        tag=tag,
+        number_of_cycles=cycle_count,
     )
 
-    parser_check_by_date.add_argument(
-        "--start-period",
-        required=False,
-        default=None,
-        type=str,
+
+@app.command()
+def check_by_date(
+    target: str = typer.Option(
+        ...,
+        help="Target of the pipeline. Namespace, and purpose of pipeline. Options: ['geo','bedbase']",
+        callback=validate_target,
+    ),
+    tag: str = typer.Option(
+        "default",
+        help="Tag of the project, that will be uploaded to the pephub",
+    ),
+    start_period: str = typer.Option(
+        None,
         help="start_period (Earlier in the calender) ['2020/02/25']",
-    )
-    parser_check_by_date.add_argument(
-        "--end-period",
-        required=False,
-        default=None,
-        type=str,
+    ),
+    end_period: str = typer.Option(
+        None,
         help="end period (Later in the calender) ['2021/05/27']",
+    ),
+):
+    """
+    Check if all projects were uploaded successfully in specified period and upload them if not.
+    Additionally, you can download projects from huge period of time.
+    e.g. if you want to download projects from 2020/02/25 to 2021/05/27, you should set start_period=2020/02/25, and end_period=2021/05/27
+    """
+    check_by_date_function(
+        target=target,
+        tag=tag,
+        start_period=start_period,
+        end_period=end_period,
     )
 
-    return parser.parse_args(cmdl)
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"geopephub version: {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def common(
+    ctx: typer.Context,
+    version: bool = typer.Option(
+        None, "--version", "-v", callback=version_callback, help="App version"
+    ),
+):
+    pass

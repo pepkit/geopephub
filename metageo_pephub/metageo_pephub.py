@@ -93,11 +93,6 @@ def add_to_queue_by_period(
 
     :param target: Namespace of the projects (bedbase, geo)
     :param tag: Tag of the projects
-    :param db: db name of the db
-    :param host: host of the db
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
     :param start_period: start date of cycle [e.g. 2023/02/07]
     :param end_period: end date of cycle [e.g. 2023/02/08]
     :return: NoReturn

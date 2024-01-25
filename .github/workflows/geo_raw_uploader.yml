@@ -28,7 +28,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Add to the queue
-        run: python metageo_pephub/main.py --target geo --function run_queuer
+        run: python metageo_pephub/main.py run_queuer --target geo
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -37,7 +37,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Add to the database
-        run: python metageo_pephub/main.py --target geo --function run_uploader
+        run: python metageo_pephub/main.py run_uploader --target geo
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
