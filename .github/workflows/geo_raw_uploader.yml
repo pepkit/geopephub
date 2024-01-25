@@ -28,7 +28,7 @@ jobs:
         run: python -m pip install .
 
       - name: Add to the queue
-        run: python geopephub/main.py run-queuer --target geo
+        run: geopephub run-queuer --target geo
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -37,7 +37,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Add to the database
-        run: python geopephub/main.py run-uploader --target geo
+        run: geopephub run-uploader --target geo
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
