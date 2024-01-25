@@ -31,11 +31,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dev dependencies
-        run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
+      - name: Install package
+        run: python -m pip install .
 
       - name: Upload Projects of specified period
-        run: python geopephub/main.py check-by-date --target ${{ inputs.target }} --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}
+        run: geopephuby check-by-date --target ${{ inputs.target }} --start-period ${{ inputs.start_period }} --end-period ${{ inputs.end_period }}
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}

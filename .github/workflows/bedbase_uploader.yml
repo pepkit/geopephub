@@ -24,11 +24,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dev dependencies
-        run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
+      - name: Install package
+        run: python -m pip install .
 
       - name: Add to the queue
-        run: python geopephub/main.py run-queuer --target bedbase --period 2
+        run: geopephub run-queuer --target bedbase --period 2
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -37,7 +37,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Add to the database
-        run: python geopephub/main.py run-uploader --target bedbase
+        run: geopephub run-uploader --target bedbase
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
