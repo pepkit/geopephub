@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from pydantic import field_validator
 import datetime
 
-from const import STATUS_OPTIONS, CYCLE_TABLE_NAME
+from geopephub.const import STATUS_OPTIONS, CYCLE_TABLE_NAME
 
 # LOG Stages:
 # 0 - list of GSEs was fetched

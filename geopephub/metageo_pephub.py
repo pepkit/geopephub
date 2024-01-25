@@ -6,16 +6,16 @@ import logmuse
 import coloredlogs
 
 # from update_status import UploadStatusConnection
-from models import StatusModel, CycleModel
-from utils import run_geofetch, add_link_to_description
-from sqlalchemy.exc import NoResultFound
 
+from sqlalchemy.exc import NoResultFound
 from datetime import timedelta
 
 import peppy
 
-from const import LAST_UPDATE_DATES
-from utils import get_agent, get_base_db_engine
+from geopephub.const import LAST_UPDATE_DATES
+from geopephub.utils import get_agent, get_base_db_engine
+from geopephub.models import StatusModel, CycleModel
+from geopephub.utils import run_geofetch, add_link_to_description
 
 
 _LOGGER = logmuse.init_logger("geo_to_pephub")

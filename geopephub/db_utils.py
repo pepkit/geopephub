@@ -21,9 +21,9 @@ import datetime
 import logmuse
 import coloredlogs
 
-from models import StatusModel, CycleModel
+from geopephub.models import StatusModel, CycleModel
 
-from const import STATUS_TABLE_NAME, CYCLE_TABLE_NAME, POSTGRES_DIALECT
+from geopephub.const import STATUS_TABLE_NAME, CYCLE_TABLE_NAME, POSTGRES_DIALECT
 
 _LOGGER = logmuse.init_logger("log_uploader")
 coloredlogs.install(

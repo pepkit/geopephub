@@ -1,11 +1,11 @@
 import typer
-from metageo_pephub import (
+from geopephub.metageo_pephub import (
     add_to_queue,
     upload_queued_projects,
     run_upload_checker,
     check_by_date as check_by_date_function,
 )
-from __version__ import __version__
+from geopephub.__version__ import __version__
 
 app = typer.Typer()
 

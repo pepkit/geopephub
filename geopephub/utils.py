@@ -6,14 +6,14 @@ import peppy
 from pepdbagent import PEPDatabaseAgent
 import os
 from dotenv import load_dotenv
-from const import (
+from geopephub.const import (
     DEFAULT_POSTGRES_USER,
     DEFAULT_POSTGRES_PASSWORD,
     DEFAULT_POSTGRES_HOST,
     DEFAULT_POSTGRES_DB,
     DEFAULT_POSTGRES_PORT,
 )
-from db_utils import BaseEngine
+from geopephub.db_utils import BaseEngine
 
 GSE_LINK = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={}"
 

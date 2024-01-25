@@ -28,7 +28,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Check 1 cycle before
-        run: python metageo_pephub/main.py run-checker --target bedbase --period 2 --cycle-count 1
+        run: python geopephub/main.py run-checker --target bedbase --period 2 --cycle-count 1
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -37,7 +37,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 2 cycle before
-        run: python metageo_pephub/main.py run-checker --target bedbase --period 2 --cycle-count 2
+        run: python geopephub/main.py run-checker --target bedbase --period 2 --cycle-count 2
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -46,7 +46,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 3 cycle before
-        run: python metageo_pephub/main.py run-checker --target bedbase --period 2 --cycle-count 3
+        run: python geopephub/main.py run-checker --target bedbase --period 2 --cycle-count 3
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -55,7 +55,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 4 cycle before
-        run: python metageo_pephub/main.py run-checker --target bedbase --period 2 --cycle-count 4
+        run: python geopephub/main.py run-checker --target bedbase --period 2 --cycle-count 4
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -64,7 +64,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 5 cycle before
-        run: python metageo_pephub/main.py run-checker --target bedbase --period 2 --cycle-count 5
+        run: python geopephub/main.py run-checker --target bedbase --period 2 --cycle-count 5
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}

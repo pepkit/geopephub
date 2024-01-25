@@ -1,5 +1,5 @@
 import sys
-from cli import app
+from geopephub.cli import app
 
 
 def main():
