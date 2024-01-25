@@ -26,63 +26,6 @@ coloredlogs.install(
 )
 
 
-def metageo_main(
-    target: str,
-    function: str,
-    gse: str = None,
-    period: int = 1,
-    tag: str = None,
-    cycle_count: int = None,
-    start_period=None,
-    end_period=None,
-):
-    """
-
-    :param target: Namespace of the projects [bedbase, geo]
-    :param tag: Tag of the projects
-    :param function: [should be in ["q_insert", "q_upload", "insert_one", "create_status_table", "check_by_date"]]
-    :param start_period: [used in check_by_date function] the start of the period (the earliest date in the calender)
-    :param end_period: [used in check_by_date function] the end of the period (the latest date in the calender)
-    :return: NoReturn
-    """
-    if function == "run_queuer":
-        add_to_queue(
-            target=target,
-            tag=tag,
-            period=period,
-        )
-    elif function == "run_uploader":
-        upload_queued_projects(
-            target=target,
-            tag=tag,
-        )
-    elif function == "insert_one":
-        ...
-
-    elif function == "run_checker":
-        run_upload_checker(
-            target=target,
-            period_length=period,
-            tag=tag,
-            number_of_cycles=cycle_count,
-        )
-
-    elif function == "check_by_date":
-        check_by_date(
-            target=target,
-            tag=tag,
-            start_period=start_period,
-            end_period=end_period,
-        )
-
-    else:
-        raise Exception(
-            "Error in function calling. "
-            """Function should be one from the list
-                         ["q_insert", "q_upload", "insert_one", "create_status_table"]"""
-        )
-
-
 def add_to_queue_by_period(
     target: str,
     tag: str,
