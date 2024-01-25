@@ -23,6 +23,8 @@ import coloredlogs
 
 from models import StatusModel, CycleModel
 
+from const import STATUS_TABLE_NAME, CYCLE_TABLE_NAME, POSTGRES_DIALECT
+
 _LOGGER = logmuse.init_logger("log_uploader")
 coloredlogs.install(
     logger=_LOGGER,
@@ -30,7 +32,6 @@ coloredlogs.install(
     fmt="[%(levelname)s] [%(asctime)s] %(message)s",
 )
 
-from const import STATUS_TABLE_NAME, CYCLE_TABLE_NAME, POSTGRES_DIALECT
 
 # LOG Stages:
 # 0 - list of GSEs was fetched

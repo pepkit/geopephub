@@ -25,7 +25,7 @@ jobs:
         run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
 
       - name: Run upload
-        run: python metageo_pephub/main.py run_uploader --target geo
+        run: python metageo_pephub/main.py run-uploader --target geo
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
