@@ -5,6 +5,7 @@ from geopephub.metageo_pephub import (
     run_upload_checker,
     check_by_date as check_by_date_function,
 )
+from geopephub.bunch_geo import bunch_geo
 from geopephub.__version__ import __version__
 
 app = typer.Typer()
@@ -131,6 +132,75 @@ def check_by_date(
         tag=tag,
         start_period=start_period,
         end_period=end_period,
+    )
+
+
+@app.command()
+def download(
+    namespace: str = typer.Option(
+        ...,
+        help="Namespace of the projects that have to be downloaded. ",
+    ),
+    filter_by: str = typer.Option(
+        "update_date",
+        help="filter_by Options: ['update_date', 'submission_date']",
+    ),
+    start_period: str = typer.Option(
+        None,
+        help="start_period when project was updated (Earlier in the calendar) ['2020/02/25']"
+        "By default set the earliest date in the database",
+    ),
+    end_period: str = typer.Option(
+        None,
+        help="end period when project was updated (Later in the calendar) ['2021/05/27']"
+        "By default set the current date",
+    ),
+    limit: int = typer.Option(
+        1000,
+        help="Number of projects to download",
+    ),
+    offset: int = typer.Option(
+        0,
+        help="Offset of the projects to download",
+    ),
+    destination: str = typer.Option(
+        None,
+        help="Output directory or s3 bucket. For s3 bucket use s3://bucket_name"
+        "By default set current directory",
+    ),
+    order_by: str = typer.Option(
+        default="update_date",
+        help="order_by Options: ['name', 'update_date', 'submission_date']",
+    ),
+    query: str = typer.Option(
+        None,
+        help="query string. You can find project by keyword, e.g. 'leukemia', default: None"
+        "By default all projects will be downloaded",
+    ),
+    compress: bool = typer.Option(
+        True,
+        help="zip downloaded projects, default: True",
+    ),
+    force: bool = typer.Option(
+        False,
+        help="force rewrite project if it exists, default: False",
+    ),
+):
+    """
+    Download all GEO projects from GEO namespace
+    """
+    bunch_geo(
+        namespace=namespace,
+        filter_by=filter_by,
+        start_period=start_period,
+        end_period=end_period,
+        limit=limit,
+        offset=offset,
+        destination=destination,
+        order_by=order_by,
+        query=query,
+        compress=compress,
+        force=force,
     )
 
 
