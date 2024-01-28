@@ -5,13 +5,9 @@ from pephubclient.helpers import save_pep, MessageHandler
 from pephubclient.files_manager import FilesManager
 from pepdbagent.models import RegistryPath
 
-
-from datetime import datetime
-
 from ubiquerg import parse_registry_path
 import os
 from typing import List
-import peppy
 import tempfile
 import boto3
 from botocore.exceptions import ClientError
