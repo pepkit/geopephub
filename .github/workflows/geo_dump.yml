@@ -28,10 +28,10 @@ jobs:
       - name: Install package
         run: python -m pip install .
 
-      - name: Calculate yesterday's date and set it as an environment variable
+      - name: Put yesterday's date in the environment
         run: |
-          $NOW = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
-          echo "YESTERDAY=$NOW" >> $env:GITHUB_ENV
+          $YESTERDAY=(Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
+          echo "YESTERDAY=$YESTERDAY" >> $env:GITHUB_ENV
 
       - name: Add to the queue
         run: geopephub download --namespace geo --limit 5 --start-period ${{ env.YESTERDAY }} --destination s3://pephub
