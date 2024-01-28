@@ -1,4 +1,4 @@
-name: Queue and upload GEO projects
+name: geo projects to s3
 
 on:
   schedule:
