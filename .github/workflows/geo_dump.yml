@@ -30,8 +30,7 @@ jobs:
 
       - name: Put yesterday's date in the environment
         run: |
-          $YESTERDAY=(Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
-          echo "YESTERDAY=$YESTERDAY" >> $env:GITHUB_ENV
+          echo "YESTERDAY=$(date -d "yesterday 13:00" '+%Y/%m/%d')" >> $GITHUB_ENV
 
       - name: Add to the queue
         run: geopephub download --namespace geo --limit 5 --start-period ${{ env.YESTERDAY }} --destination s3://pephub
