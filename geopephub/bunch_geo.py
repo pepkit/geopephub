@@ -23,7 +23,7 @@ def bunch_geo(
     limit: int = 10000,
     offset: int = 0,
     destination: str = None,
-    order_by: str = "update_date",
+    order_by: str = "last_update_date",
     query: str = None,
     compress: bool = True,
     force: bool = False,
@@ -32,7 +32,7 @@ def bunch_geo(
     Get a list of all the PEPs in a PEPhub from GEO namespace, download them and zip into a single file.
 
     :param namespace: namespace ['geo']
-    :param filter_by: filter_by Options: ["update_date", "submission_date"]
+    :param filter_by: filter_by Options: ["last_update_date", "submission_date"]
     :param start_period: start_period when project was updated (Earlier in the calendar) ['2020/02/25']
     :param end_period: end period when project was updated (Later in the calendar) ['2021/05/27']
     :param limit: Number of projects to download

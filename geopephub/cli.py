@@ -142,8 +142,8 @@ def download(
         help="Namespace of the projects that have to be downloaded. ",
     ),
     filter_by: str = typer.Option(
-        "update_date",
-        help="filter_by Options: ['update_date', 'submission_date']",
+        "last_update_date",
+        help="filter_by Options: ['last_update_date', 'submission_date']",
     ),
     start_period: str = typer.Option(
         None,
