@@ -34,6 +34,8 @@ pephubclient= { git = "https://github.com/pepkit/pephubclient.git", branch = "de
 pydantic= "^2.5.0"
 python-dotenv= "^1.0.1"
 typer= "^0.9.0"
+boto3="^1.34.29"
+botocore="^1.34.29"
 
 [build-system]
 requires = ["poetry-core"]
