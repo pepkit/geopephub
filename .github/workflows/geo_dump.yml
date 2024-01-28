@@ -33,7 +33,7 @@ jobs:
           echo "YESTERDAY=$(date -d "yesterday 13:00" '+%Y/%m/%d')" >> $GITHUB_ENV
 
       - name: Add to the queue
-        run: geopephub download --namespace geo --limit 5 --start-period ${{ env.YESTERDAY }} --destination s3://pephub
+        run: geopephub download --namespace geo --limit 1000 --start-period ${{ env.YESTERDAY }} --destination s3://pephub
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
