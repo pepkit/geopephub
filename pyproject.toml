@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "geopephub"
+version = "0.0.3"
+description = "Pipeline for processing GEO data and uploading it to the PEPHub"
+authors = ["Oleksandr Khoroshevskyi <khorosh@virginia.edu>"]
+readme = "README.md"
+homepage = "https://github.com/pepkit/metageo_pephub"
+documentation = "https://github.com/pepkit/metageo_pephub"
+repository = "https://github.com/pepkit/metageo_pephub"
+license = "MIT"
+exclude = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+geofetch = "^0.12.5"
+pepdbagent= "^0.7.1"
+SQLAlchemy = ">=2.0.0,<2.1.0"
+logmuse= "^0.2.7"
+coloredlogs= "^15.0.1"
+peppy= "^0.40.1"
+#pephubclient= "^0.2.1"
+pephubclient= { git = "https://github.com/pepkit/pephubclient.git", branch = "dev" }
+pydantic= "^2.5.0"
+python-dotenv= "^1.0.1"
+typer= "^0.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry-version-plugin]
+source = "init"
+
+[tool.poetry.scripts]
+geopephub = "geopephub.main:main"

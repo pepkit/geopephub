@@ -1,23 +1,21 @@
 import geofetch
 import pepdbagent
-import argparse
-import sys
 from typing import NoReturn, Dict
 import datetime
 import logmuse
 import coloredlogs
 
 # from update_status import UploadStatusConnection
-from db_utils import BaseEngine
-from models import StatusModel, CycleModel
-from utils import run_geofetch, add_link_to_description
-from sqlalchemy.exc import NoResultFound
 
+from sqlalchemy.exc import NoResultFound
 from datetime import timedelta
 
 import peppy
 
-from const import LAST_UPDATE_DATES
+from geopephub.const import LAST_UPDATE_DATES
+from geopephub.utils import get_agent, get_base_db_engine
+from geopephub.models import StatusModel, CycleModel
+from geopephub.utils import run_geofetch, add_link_to_description
 
 
 _LOGGER = logmuse.init_logger("geo_to_pephub")
@@ -28,115 +26,21 @@ coloredlogs.install(
 )
 
 
-def metageo_main(
-    target: str,
-    db: str,
-    host: str,
-    user: str,
-    password: str,
-    function: str,
-    gse: str = None,
-    period: int = 1,
-    port: int = 5432,
-    tag: str = None,
-    cycle_count: int = None,
-    start_period=None,
-    end_period=None,
-):
-    """
-    :param target: Namespace of the projects [bedbase, geo]
-    :param tag: Tag of the projects
-    :param db: db name of the db
-    :param host: host of the db
-    :param function: [should be in ["q_insert", "q_upload", "insert_one", "create_status_table", "check_by_date"]]
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
-    :param start_period: [used in check_by_date function] the start of the period (the earliest date in the calender)
-    :param end_period: [used in check_by_date function] the end of the period (the latest date in the calender)
-    :return: NoReturn
-    """
-    if function == "run_queuer":
-        add_to_queue(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
-            target=target,
-            tag=tag,
-            period=period,
-        )
-    elif function == "run_uploader":
-        upload_queued_projects(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
-            target=target,
-            tag=tag,
-        )
-    elif function == "insert_one":
-        ...
-
-    elif function == "run_checker":
-        run_upload_checker(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
-            target=target,
-            period_length=period,
-            tag=tag,
-            number_of_cycles=cycle_count,
-        )
-
-    elif function == "check_by_date":
-        check_by_date(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
-            target=target,
-            tag=tag,
-            start_period=start_period,
-            end_period=end_period,
-        )
-
-    else:
-        raise Exception(
-            "Error in function calling. "
-            """Function should be one from the list
-                         ["q_insert", "q_upload", "insert_one", "create_status_table"]"""
-        )
-
-
 def add_to_queue_by_period(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
     target: str,
     tag: str,
     start_period: str,
     end_period: str,
-    port: int = 5432,
-) -> NoReturn:
+) -> None:
     """
 
     :param target: Namespace of the projects (bedbase, geo)
     :param tag: Tag of the projects
-    :param db: db name of the db
-    :param host: host of the db
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
     :param start_period: start date of cycle [e.g. 2023/02/07]
     :param end_period: end date of cycle [e.g. 2023/02/08]
     :return: NoReturn
     """
-    status_db_connection = BaseEngine(
-        host=host, port=port, database=db, user=user, password=password
-    )
+    status_db_connection = get_base_db_engine()
 
     time_now = datetime.datetime.now()
 
@@ -193,31 +97,21 @@ def add_to_queue_by_period(
     this_cycle.status = "queued"
     status_db_connection.update_upload_cycle(this_cycle)
 
-    _LOGGER.info(f"================== Finished ==================")
+    _LOGGER.info("================== Finished ==================")
     _LOGGER.info(
         f"\033[32mAfter run report: Added {this_cycle.number_of_projects} projects\033[0m"
     )
 
 
 def add_to_queue(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
     target: str,
     tag: str,
     period: int = LAST_UPDATE_DATES,
-    port: int = 5432,
 ) -> NoReturn:
     """
 
     :param target: Namespace of the projects (bedbase, geo)
     :param tag: Tag of the projects
-    :param db: db name of the db
-    :param host: host of the db
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
     :param period: number of last days to add to the queue
     :return: NoReturn
     """
@@ -227,27 +121,17 @@ def add_to_queue(
     start_date_str = start_date.strftime("%Y/%m/%d")
 
     add_to_queue_by_period(
-        db=db,
-        host=host,
-        user=user,
-        password=password,
         target=target,
         tag=tag,
         start_period=start_date_str,
         end_period=end_date_str,
-        port=port,
     )
 
 
 def upload_queued_projects(
     target: str,
-    db: str,
-    host: str,
-    user: str,
-    password: str,
-    port: int = 5432,
     tag: str = None,
-) -> NoReturn:
+) -> None:
     # LOG info
     time_now = datetime.datetime.now()
     _LOGGER.info(f"Time now: {time_now}")
@@ -255,12 +139,8 @@ def upload_queued_projects(
     _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
     _LOGGER.info(f"peppy version: {peppy.__version__}")
 
-    agent = pepdbagent.PEPDatabaseAgent(
-        host=host, port=port, database=db, user=user, password=password
-    )
-    status_db_connection = BaseEngine(
-        host=host, port=port, database=db, user=user, password=password
-    )
+    agent = get_agent()
+    status_db_connection = get_base_db_engine()
 
     list_of_cycles = status_db_connection.get_queued_cycle(target=target)
 
@@ -345,7 +225,7 @@ def _upload_gse_project(
             gse_log.status_info = "geofetcher"
             gse_log.log_stage = 2
             project_dict = run_geofetch(gse, geofetcher_obj)
-            _LOGGER.info(f"Project has been downloaded using geofetch")
+            _LOGGER.info("Project has been downloaded using geofetch")
         except Exception as err:
             gse_log.status = "failure"
             gse_log.info = str(err)
@@ -377,7 +257,7 @@ def _upload_gse_project(
             )
             gse_log.log_stage = 3
             gse_log.status_info = "pepdbagent"
-            if target == 'bedbase':
+            if target == "bedbase":
                 tag = pep_tag
             else:
                 tag = "default"
@@ -403,35 +283,27 @@ def _upload_gse_project(
 
                 status_dict["failure"] += 1
 
-    _LOGGER.info(f"================== Finished ==================")
+    _LOGGER.info("================== Finished ==================")
     _LOGGER.info(f"\033[32mAfter run report: {status_dict}\033[0m")
     return status_dict
 
 
 def run_upload_checker(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
     target: str,
     period_length: int,
     tag: str,
     number_of_cycles: int = 1,
-    port: int = 5432,
 ) -> NoReturn:
     """
     Check if previous run (cycle) was successful.
+
     :param target: Namespace of the projects (bedbase, geo)
-    :param db: db name of the db
-    :param host: host of the db
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
     :param period_length: length of the period
     :param tag: tag of the projects
     :param number_of_cycles: what cycle behind should be checked?
     :return: NoReturn
     """
+
     today_date = datetime.datetime.today() - timedelta(
         days=period_length * number_of_cycles
     )
@@ -439,45 +311,30 @@ def run_upload_checker(
     start_period = start_date.strftime("%Y/%m/%d")
     end_period = today_date.strftime("%Y/%m/%d")
     check_by_date(
-        db=db,
-        host=host,
-        user=user,
-        password=password,
         target=target,
         start_period=start_period,
         end_period=end_period,
         tag=tag,
-        port=port,
     )
 
 
 def check_by_date(
-    db: str,
-    host: str,
-    user: str,
-    password: str,
     target: str,
     start_period: str,
     end_period: str,
     tag: str,
-    port: int = 5432,
 ) -> NoReturn:
     """
     Check if previous run (cycle) was successful.
+
     :param target: Namespace of the projects (bedbase, geo)
-    :param db: db name of the db
-    :param host: host of the db
-    :param user: Username
-    :param password: Password
-    :param port: port of the database
     :param start_period: start_period (Earlier in the calender) ["2020/02/25"]
     :param end_period: end period (Later in the calender) ["2021/05/27"]
     :param tag: tag of the projects
     :return: NoReturn
     """
-    status_db_connection = BaseEngine(
-        host=host, port=port, database=db, user=user, password=password
-    )
+
+    status_db_connection = get_base_db_engine()
 
     today_date = datetime.datetime.strptime(end_period, "%Y/%m/%d")
     start_date = datetime.datetime.strptime(start_period, "%Y/%m/%d")
@@ -498,9 +355,9 @@ def check_by_date(
             _LOGGER.info(
                 f"Cycle {start_period}:{end_period} was successful. (Queuing was successful)"
             )
-            _LOGGER.info(f"Checking sample uploading status...")
+            _LOGGER.info("Checking sample uploading status...")
             if cycle_info.number_of_projects == cycle_info.number_of_successes:
-                _LOGGER.info(f"All uploads were successful.")
+                _LOGGER.info("All uploads were successful.")
             else:
                 list_of_failed_prj = status_db_connection.get_failed_project(
                     cycle_info.id
@@ -510,9 +367,7 @@ def check_by_date(
                 for gse_log_item in list_of_failed_prj:
                     log_model_dict[gse_log_item.gse] = gse_log_item
 
-                agent = pepdbagent.PEPDatabaseAgent(
-                    host=host, port=port, database=db, user=user, password=password
-                )
+                agent = get_agent()
 
                 status_dict = _upload_gse_project(
                     agent, status_db_connection, log_model_dict, target, tag
@@ -529,27 +384,17 @@ def check_by_date(
                 # cycle_info.number_of_failures = status_dict.get("failure")
                 status_db_connection.update_upload_cycle(cycle_info)
 
-    except (CycleSuccessException, NoResultFound, IndexError) as err:
-        _LOGGER.warning(f"Result not found, Uploading!")
+    except (CycleSuccessException, NoResultFound, IndexError):
+        _LOGGER.warning("Result not found, Uploading!")
         # return False
         add_to_queue_by_period(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
             target=target,
             start_period=start_period,
             end_period=end_period,
-            port=port,
             tag=tag,
         )
         upload_queued_projects(
-            db=db,
-            host=host,
-            user=user,
-            password=password,
             target=target,
-            port=port,
             tag=tag,
         )
 

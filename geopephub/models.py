@@ -1,10 +1,10 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from pydantic import validator
+from pydantic import field_validator
 import datetime
 
-from const import STATUS_TABLE_NAME, STATUS_OPTIONS, CYCLE_TABLE_NAME
+from geopephub.const import STATUS_OPTIONS, CYCLE_TABLE_NAME
 
 # LOG Stages:
 # 0 - list of GSEs was fetched
@@ -14,19 +14,19 @@ from const import STATUS_TABLE_NAME, STATUS_OPTIONS, CYCLE_TABLE_NAME
 
 
 class CycleModel(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     status_date: Optional[datetime.datetime] = datetime.datetime.now()
     target: str
     status: str
-    start_period: Optional[str]
-    end_period: Optional[str]
+    start_period: Optional[str] = ""
+    end_period: Optional[str] = ""
     number_of_projects: Optional[int] = 0
     number_of_successes: Optional[int] = 0
     number_of_failures: Optional[int] = 0
 
     __tablename__ = CYCLE_TABLE_NAME
 
-    @validator("status")
+    @field_validator("status")
     def status_checker(cls, value):
         if value not in STATUS_OPTIONS:
             raise ValueError("Incorrect status value")
@@ -35,12 +35,12 @@ class CycleModel(BaseModel):
 
 
 class StatusModel(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     gse: str
-    target: Optional[str]  # TODO: remove it
-    registry_path: Optional[str]
-    upload_cycle_id: Optional[int]
+    target: Optional[str] = None  # TODO: remove it
+    registry_path: Optional[str] = None
+    upload_cycle_id: Optional[int] = None
     log_stage: int
     status: str
-    status_info: Optional[str]
-    info: Optional[str]
+    status_info: Optional[str] = None
+    info: Optional[str] = None

@@ -13,5 +13,11 @@ STATUS_OPTIONS = [
 # number of last days used in Finder
 LAST_UPDATE_DATES = 1
 
+DEFAULT_POSTGRES_USER = "postgres"
+DEFAULT_POSTGRES_PASSWORD = "docker"
+DEFAULT_POSTGRES_HOST = "localhost"
+DEFAULT_POSTGRES_DB = "pep-db"
+DEFAULT_POSTGRES_PORT = 5432
+
 # db_dialects
-POSTGRES_DIALECT = "postgresql"
+POSTGRES_DIALECT = "postgresql+psycopg"

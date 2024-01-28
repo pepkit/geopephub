@@ -3,8 +3,21 @@ import signal
 import geofetch
 from typing import Dict
 import peppy
+from pepdbagent import PEPDatabaseAgent
+import os
+from dotenv import load_dotenv
+from geopephub.const import (
+    DEFAULT_POSTGRES_USER,
+    DEFAULT_POSTGRES_PASSWORD,
+    DEFAULT_POSTGRES_HOST,
+    DEFAULT_POSTGRES_DB,
+    DEFAULT_POSTGRES_PORT,
+)
+from geopephub.db_utils import BaseEngine
 
 GSE_LINK = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={}"
+
+load_dotenv()
 
 
 class FunctionTimeoutError(Exception):
@@ -60,10 +73,11 @@ def run_geofetch(
     :return: dict of peppys
     """
     if not geofetcher_obj:
-        geofetcher_obj = geofetch.Geofetcher(const_limit_discard=1500,
-        attr_limit_truncate=1000,
-        const_limit_project=200,
-    )
+        geofetcher_obj = geofetch.Geofetcher(
+            const_limit_discard=1500,
+            attr_limit_truncate=1000,
+            const_limit_project=200,
+        )
     project_dict = geofetcher_obj.get_projects(gse)
     return project_dict
 
@@ -82,3 +96,31 @@ def add_link_to_description(gse: str, pep: peppy.Project) -> peppy.Project:
     pep.description = new_description
     pep.name = gse.lower()
     return pep
+
+
+def get_agent() -> PEPDatabaseAgent:
+    """
+    Get PEPDatabaseAgent object
+    :return: PEPDatabaseAgent
+    """
+    return PEPDatabaseAgent(
+        user=os.environ.get("POSTGRES_USER") or DEFAULT_POSTGRES_USER,
+        password=os.environ.get("POSTGRES_PASSWORD") or DEFAULT_POSTGRES_PASSWORD,
+        host=os.environ.get("POSTGRES_HOST") or DEFAULT_POSTGRES_HOST,
+        database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
+        port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
+    )
+
+
+def get_base_db_engine() -> BaseEngine:
+    """
+    Get BaseEngine object
+    :return: BaseEngine
+    """
+    return BaseEngine(
+        user=os.environ.get("POSTGRES_USER") or DEFAULT_POSTGRES_USER,
+        password=os.environ.get("POSTGRES_PASSWORD") or DEFAULT_POSTGRES_PASSWORD,
+        host=os.environ.get("POSTGRES_HOST") or DEFAULT_POSTGRES_HOST,
+        database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
+        port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
+    )

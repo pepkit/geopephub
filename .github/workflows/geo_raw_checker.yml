@@ -25,23 +25,53 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dev dependencies
-        run: if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
+      - name: Install package
+        run: python -m pip install .
 
       - name: Check 1 cycle before
-        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 1
+        run: geopephub run-checker --target geo --cycle-count 1
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 2 cycle before
-        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 2
+        run: geopephub run-checker --target geo --cycle-count 2
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 3 cycle before
-        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 3
+        run: geopephub run-checker --target geo --cycle-count 3
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 4 cycle before
-        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 4
+        run: geopephub run-checker --target geo --cycle-count 4
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
       - name: Check 5 cycle before
-        run: python metageo_pephub/main.py --target geo --function run_checker --host ${{ secrets.HOST }} --db ${{ secrets.DB }} --user ${{ secrets.USER }} --password ${{ secrets.PASSWORD }} --cycle-count 5
+        run: geopephub run-checker --target geo --cycle-count 5
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
         
       - name: Keeplive, so git won't suspend after 60 days
         uses: gautamkrishnar/keepalive-workflow@v1 
