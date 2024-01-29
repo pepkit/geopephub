@@ -2,8 +2,7 @@ import geofetch
 import pepdbagent
 from typing import NoReturn, Dict
 import datetime
-import logmuse
-import coloredlogs
+import logging
 
 # from update_status import UploadStatusConnection
 
@@ -18,12 +17,7 @@ from geopephub.models import StatusModel, CycleModel
 from geopephub.utils import run_geofetch, add_link_to_description
 
 
-_LOGGER = logmuse.init_logger("geo_to_pephub")
-coloredlogs.install(
-    logger=_LOGGER,
-    datefmt="%H:%M:%S",
-    fmt="[%(levelname)s] [%(asctime)s] %(message)s",
-)
+_LOGGER = logging.getLogger(__name__)
 
 
 def add_to_queue_by_period(

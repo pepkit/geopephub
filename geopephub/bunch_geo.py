@@ -1,9 +1,11 @@
 # This script aims to provide a simple way to get a list of all the PEPs in a
 # PEPhub from GEO namespace, download them and zip into a single file.
 import pepdbagent
+import pephubclient
 from pephubclient.helpers import save_pep, MessageHandler
 from pephubclient.files_manager import FilesManager
 from pepdbagent.models import RegistryPath
+import logging
 
 from ubiquerg import parse_registry_path
 import os
@@ -12,9 +14,12 @@ import tempfile
 import boto3
 from botocore.exceptions import ClientError
 
-from geopephub.utils import get_agent
+from geopephub.utils import get_agent, calculate_time
+
+_LOGGER = logging.getLogger(__name__)
 
 
+@calculate_time
 def bunch_geo(
     namespace: str = "geo",
     filter_by: str = "update_date",
@@ -46,6 +51,9 @@ def bunch_geo(
     :return: None
     """
 
+    _LOGGER.info(f"pepdbagent version: {pepdbagent.__version__}")
+    _LOGGER.info(f"{pephubclient.__app_name__} version: {pephubclient.__version__}")
+
     if not destination:
         destination = os.getcwd()
     s3 = parse_registry_path(destination)
@@ -71,7 +79,16 @@ def bunch_geo(
     else:
         if not os.path.exists(destination):
             os.makedirs(destination)
-        for geo in projects_list:
+
+        total_number = len(projects_list) + 1
+        _LOGGER.info(f"Number of projects that will be downloaded: {total_number}")
+        for processing_number, geo in enumerate(projects_list):
+            _LOGGER.info(
+                f"\033[0;33m ############################################# \033[0m"
+            )
+            _LOGGER.info(
+                f"\033[0;33mProcessing project: {geo.namespace}/{geo.name}:{geo.tag}. {processing_number}/{total_number}\033[0m"
+            )
             project = agent.project.get(
                 namespace=geo.namespace, name=geo.name, tag=geo.tag, raw=True
             )
@@ -100,7 +117,15 @@ def process_to_s3(
         agent = get_agent()
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        for geo in projects_list:
+        total_number = len(projects_list) + 1
+        _LOGGER.info(f"Number of projects that will be downloaded: {total_number}")
+        for processing_number, geo in enumerate(projects_list):
+            _LOGGER.info(
+                f"\033[0;33m ############################################# \033[0m"
+            )
+            _LOGGER.info(
+                f"\033[0;33mProcessing project: {geo.namespace}/{geo.name}:{geo.tag}. {processing_number}/{total_number}\033[0m"
+            )
             project = agent.project.get(
                 namespace=geo.namespace, name=geo.name, tag=geo.tag, raw=True
             )

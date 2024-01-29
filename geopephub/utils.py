@@ -6,18 +6,25 @@ import peppy
 from pepdbagent import PEPDatabaseAgent
 import os
 from dotenv import load_dotenv
+from functools import wraps
+import logging
+import datetime
+
 from geopephub.const import (
     DEFAULT_POSTGRES_USER,
     DEFAULT_POSTGRES_PASSWORD,
     DEFAULT_POSTGRES_HOST,
     DEFAULT_POSTGRES_DB,
     DEFAULT_POSTGRES_PORT,
+    __name__,
 )
 from geopephub.db_utils import BaseEngine
 
 GSE_LINK = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={}"
 
 load_dotenv()
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class FunctionTimeoutError(Exception):
@@ -32,6 +39,26 @@ class FunctionTimeoutError(Exception):
             could not be interpreted as an accession
         """
         super(FunctionTimeoutError, self).__init__(reason)
+
+
+def calculate_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+
+        hours, remainder = divmod(execution_time, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        print(
+            f"Function '{func.__name__}' executed in {int(hours)} hours, {int(minutes)} minutes, and {seconds:.2f} seconds"
+        )
+
+        return result
+
+    return wrapper
 
 
 # TODO: consider to change it to: https://github.com/pnpnpn/timeout-decorator

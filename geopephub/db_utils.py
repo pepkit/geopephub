@@ -18,19 +18,17 @@ from sqlalchemy.orm import (
 
 import datetime
 
-import logmuse
-import coloredlogs
+import logging
 
 from geopephub.models import StatusModel, CycleModel
-
-from geopephub.const import STATUS_TABLE_NAME, CYCLE_TABLE_NAME, POSTGRES_DIALECT
-
-_LOGGER = logmuse.init_logger("log_uploader")
-coloredlogs.install(
-    logger=_LOGGER,
-    datefmt="%H:%M:%S",
-    fmt="[%(levelname)s] [%(asctime)s] %(message)s",
+from geopephub.const import (
+    STATUS_TABLE_NAME,
+    CYCLE_TABLE_NAME,
+    POSTGRES_DIALECT,
+    __name__,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # LOG Stages:
