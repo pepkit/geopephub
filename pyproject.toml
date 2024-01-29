@@ -4,14 +4,14 @@ version = "0.0.3"
 description = "Pipeline for processing GEO data and uploading it to the PEPHub"
 authors = ["Oleksandr Khoroshevskyi <khorosh@virginia.edu>"]
 readme = "README.md"
-homepage = "https://github.com/pepkit/metageo_pephub"
-documentation = "https://github.com/pepkit/metageo_pephub"
-repository = "https://github.com/pepkit/metageo_pephub"
-license = "MIT"
+homepage = "https://github.com/pepkit/geoephub"
+documentation = "https://github.com/pepkit/geoephub"
+repository = "https://github.com/pepkit/geoephub"
+license = "BSD-2-Clause license"
 exclude = []
 classifiers = [
     "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: BSD-2-Clause license",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
