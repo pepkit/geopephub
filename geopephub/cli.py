@@ -187,7 +187,8 @@ def download(
     ),
 ):
     """
-    Download all GEO projects from GEO namespace
+    Download projects from the particular namespace.
+    You can filter projects, order them, and download only part of them.
     """
     bunch_geo(
         namespace=namespace,
