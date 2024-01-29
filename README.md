@@ -1,5 +1,5 @@
 # geopephub
-#### Automatic uploader of GEO metadata projects to [PEPhub](https://pephub.databio.org/).
+#### Automatic uploader of GEO metadata projects to [PEPhub](https://pephub.databio.org/geo).
 
 This repository contains `geopephub` CLI, that enables to automatic upload GEO projects to PEPhub based on date and scheduled automatic uploading using GitHub actions. 
 Additionally, the CLI includes a download command, enabling users to retrieve projects from specifed namespace directly from the PEPhub database. This feature is particularly helpful for downloading all GEO projects at once.
