@@ -1,9 +1,9 @@
 name: geo projects to s3
 
 on:
-  schedule:
-    # run every day at 11:00
-    - cron: '0 11 * * *'
+#  schedule:
+#    # run every day at 11:00
+#    - cron: '0 11 * * *'
   workflow_dispatch:
     inputs: null
 
