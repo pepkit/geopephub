@@ -55,9 +55,10 @@ def add_to_queue_by_period(
     status_db_connection.update_upload_cycle(this_cycle)
 
     if target == "bedbase":
-        gse_list = geofetch.Finder(filters="(bed)").get_gse_by_date(
-            start_date_str, today_date_str
-        )
+        # get projects only with this filter
+        gse_list = geofetch.Finder(
+            filters="((bed) OR narrowPeak) OR broadPeak"
+        ).get_gse_by_date(start_date_str, today_date_str)
     elif target == "geo":
         gse_list = geofetch.Finder().get_gse_by_date(start_date_str, today_date_str)
     else:
