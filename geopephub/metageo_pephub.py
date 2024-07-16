@@ -394,6 +394,18 @@ def check_by_date(
         )
 
 
+def clean_history(days: int = 90) -> None:
+    """
+    Delete histrory of project changes in pephub database
+
+    :param days: number of days to keep in history
+    :return: NoReturn
+    """
+
+    agent = get_agent()
+    agent.project.clean_history(days=days)
+
+
 class CycleSuccessException(Exception):
     """Exception, when cycle has status: Failure."""
 

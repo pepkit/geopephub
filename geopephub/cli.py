@@ -4,6 +4,7 @@ from geopephub.metageo_pephub import (
     upload_queued_projects,
     run_upload_checker,
     check_by_date as check_by_date_function,
+    clean_history as clean_history_function,
 )
 from geopephub.bunch_geo import bunch_geo
 from geopephub.__version__ import __version__
@@ -203,6 +204,19 @@ def download(
         compress=compress,
         force=force,
     )
+
+
+@app.command()
+def clean_history(
+    days: int = typer.Option(
+        90,
+        help="Number of days to keep in the history. Default: 90",
+    ),
+):
+    """
+    Clean history of the pephub
+    """
+    clean_history_function(days=days)
 
 
 def version_callback(value: bool):
