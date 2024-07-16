@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "geopephub"
-version = "0.0.3"
+version = "0.0.4"
 description = "Pipeline for processing GEO data and uploading it to the PEPHub"
 authors = ["Oleksandr Khoroshevskyi <khorosh@virginia.edu>"]
 readme = "README.md"
