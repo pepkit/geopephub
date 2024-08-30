@@ -140,7 +140,7 @@ def upload_queued_projects(
     list_of_cycles = status_db_connection.get_queued_cycle(target=target)
 
     if not list_of_cycles:
-        _LOGGER.info("No queued cycles found. Quiting..")
+        _LOGGER.info("No queued cycles found. Quitting..")
 
     for this_cycle in list_of_cycles:
         this_cycle.status = "processing"

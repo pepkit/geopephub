@@ -4,6 +4,7 @@ import pepdbagent
 import pephubclient
 from pephubclient.helpers import save_pep, MessageHandler
 from pephubclient.files_manager import FilesManager
+from pephubclient.exceptions import PEPExistsError
 from pepdbagent.models import RegistryPath
 import logging
 
@@ -14,7 +15,7 @@ import tempfile
 import boto3
 from botocore.exceptions import ClientError
 
-from geopephub.utils import get_agent, calculate_time
+from geopephub.utils import get_agent, calculate_time, create_gse_sub_name
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def bunch_geo(
     query: str = None,
     compress: bool = True,
     force: bool = False,
+    subfolders: bool = True,
 ) -> None:
     """
     Get a list of all the PEPs in a PEPhub from GEO namespace, download them and zip into a single file.
@@ -47,6 +49,7 @@ def bunch_geo(
     :param query: query string, e.g. "leukemia", default: None
     :param compress: zip downloaded projects, default: True
     :param force: force rewrite project if it exists, default: False
+    :param subfolders: create subfolder for each pep based on GEO accession number
 
     :return: None
     """
@@ -77,27 +80,36 @@ def bunch_geo(
         )
 
     else:
-        if not os.path.exists(destination):
-            os.makedirs(destination)
+        os.makedirs(destination, exist_ok=True)
+        new_destination = destination
 
-        total_number = len(projects_list) + 1
-        _LOGGER.info(f"Number of projects that will be downloaded: {total_number}")
+        total_number = len(projects_list)
+        _LOGGER.info(f"Number of projects to be downloaded: {total_number}")
         for processing_number, geo in enumerate(projects_list):
             _LOGGER.info(
                 f"\033[0;33m ############################################# \033[0m"
             )
             _LOGGER.info(
-                f"\033[0;33mProcessing project: {geo.namespace}/{geo.name}:{geo.tag}. {processing_number}/{total_number}\033[0m"
+                f"\033[0;33mProcessing project: {geo.namespace}/{geo.name}:{geo.tag}. {processing_number+1}/{total_number}\033[0m"
             )
             project = agent.project.get(
                 namespace=geo.namespace, name=geo.name, tag=geo.tag, raw=True
             )
-            save_pep(
-                project,
-                project_path=destination,
-                force=force,
-                zip=compress,
-            )
+            if subfolders:
+                new_destination = os.path.join(
+                    destination, create_gse_sub_name(geo.name)
+                )
+                os.makedirs(new_destination, exist_ok=True)
+
+            try:
+                save_pep(
+                    project,
+                    project_path=new_destination,
+                    force=force,
+                    zip=compress,
+                )
+            except PEPExistsError:
+                _LOGGER.warning(f"Project {geo.name} already exists. skipping..")
 
 
 def process_to_s3(

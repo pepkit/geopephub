@@ -151,3 +151,23 @@ def get_base_db_engine() -> BaseEngine:
         database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
         port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
     )
+
+
+def create_gse_sub_name(name: str) -> str:
+    """
+    Create gse subfolder name. e.g.
+        gse123456 -> gse123nnn
+        gse123 -> gsennn
+        gse1234-> gse123n
+        gse1 -> gsennn
+
+    :param name: gse name
+    :return: gse subfolder name
+    """
+
+    len_name = len(name)
+
+    if len_name <= 6:
+        return """gsennn"""
+    else:
+        return name[:6] + "n" * (len_name - 6)
