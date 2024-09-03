@@ -1,5 +1,6 @@
 # This script aims to provide a simple way to get a list of all the PEPs in a
 # PEPhub from GEO namespace, download them and zip into a single file.
+
 import pepdbagent
 import pephubclient
 from pephubclient.helpers import save_pep, MessageHandler
@@ -15,7 +16,13 @@ import tempfile
 import boto3
 from botocore.exceptions import ClientError
 
-from geopephub.utils import get_agent, calculate_time, create_gse_sub_name
+from geopephub.utils import (
+    get_agent,
+    calculate_time,
+    create_gse_sub_name,
+    tar_folder,
+    date_today,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +41,7 @@ def bunch_geo(
     compress: bool = True,
     force: bool = False,
     subfolders: bool = True,
+    tar_all: bool = True,
 ) -> None:
     """
     Get a list of all the PEPs in a PEPhub from GEO namespace, download them and zip into a single file.
@@ -50,6 +58,7 @@ def bunch_geo(
     :param compress: zip downloaded projects, default: True
     :param force: force rewrite project if it exists, default: False
     :param subfolders: create subfolder for each pep based on GEO accession number
+    :param tar_all: tar all the downloaded projects into a single file
 
     :return: None
     """
@@ -81,7 +90,14 @@ def bunch_geo(
 
     else:
         os.makedirs(destination, exist_ok=True)
-        new_destination = destination
+
+        pep_folder = os.path.join(destination, "peps")
+        tar_folder_name = os.path.join(destination, "tars")
+
+        os.makedirs(pep_folder, exist_ok=True)
+        os.makedirs(tar_folder_name, exist_ok=True)
+
+        new_destination = pep_folder
 
         total_number = len(projects_list)
         _LOGGER.info(f"Number of projects to be downloaded: {total_number}")
@@ -97,7 +113,7 @@ def bunch_geo(
             )
             if subfolders:
                 new_destination = os.path.join(
-                    destination, create_gse_sub_name(geo.name)
+                    pep_folder, create_gse_sub_name(geo.name)
                 )
                 os.makedirs(new_destination, exist_ok=True)
 
@@ -110,6 +126,12 @@ def bunch_geo(
                 )
             except PEPExistsError:
                 _LOGGER.warning(f"Project {geo.name} already exists. skipping..")
+
+        if tar_all:
+
+            tar_name = os.path.join(tar_folder_name, f"geo_{date_today()}")
+            tar_folder(pep_folder, tar_name)
+            _LOGGER.info(f"Projects were tarred into {tar_name}")
 
 
 def process_to_s3(

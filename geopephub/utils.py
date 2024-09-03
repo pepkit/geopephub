@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 from functools import wraps
 import logging
+import tarfile
 import datetime
 
 from geopephub.const import (
@@ -171,3 +172,29 @@ def create_gse_sub_name(name: str) -> str:
         return """gsennn"""
     else:
         return name[:6] + "n" * (len_name - 6)
+
+
+def tar_folder(folder_path: str, tar_name: str) -> None:
+    """Tar a folder
+
+    :param folder_path: Folder to tar
+    :param tar_name: Name of the tar file
+    :return: None
+    """
+    # tar_type = "w:gz"
+    tar_type = "w"
+    tar_name = f"{tar_name}.tar"
+
+    with tarfile.open(tar_name, tar_type) as tar:
+        tar.add(folder_path, arcname=os.path.basename(folder_path))
+    return None
+
+
+def date_today():
+    """
+    Get today's date in the format 'YYYY_MM_DD'
+    :return: str
+    """
+
+    today_date = datetime.datetime.today()
+    return today_date.strftime("%Y_%m_%d")

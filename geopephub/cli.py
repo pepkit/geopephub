@@ -186,11 +186,21 @@ def download(
         False,
         help="force rewrite project if it exists, default: False",
     ),
+    subfolders: bool = typer.Option(
+        True,
+        help="Create subfolder hierarchy based on GEO accession number, default: True",
+    ),
 ):
     """
     Download projects from the particular namespace.
     You can filter projects, order them, and download only part of them.
     """
+
+    if namespace.lower() == "geo":
+        subfolders = subfolders
+    else:
+        subfolders = False
+
     bunch_geo(
         namespace=namespace,
         filter_by=filter_by,
@@ -203,6 +213,7 @@ def download(
         query=query,
         compress=compress,
         force=force,
+        subfolders=subfolders,
     )
 
 
