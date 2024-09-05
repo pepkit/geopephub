@@ -35,7 +35,7 @@ def bunch_geo(
     filter_by: str = "last_update_date",
     start_period: str = None,
     end_period: str = None,
-    limit: int = 10000,
+    limit: int = 1000000,
     offset: int = 0,
     destination: str = None,
     order_by: str = "last_update_date",
