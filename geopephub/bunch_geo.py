@@ -248,6 +248,7 @@ def auto_run(
         destination=destination,
         compress=compress,
         tar_all=tar_all,
+        limit=1000000,
     )
 
     if upload_s3:

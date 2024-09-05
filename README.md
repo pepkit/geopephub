@@ -91,3 +91,18 @@ graph TD
     J --> K[Exit]
 
 ```
+
+
+## Download all namespace.
+
+How to run it on rivanna: 
+```bash
+install geopephub from dev branch
+pip install git+https://github.com/pepkit/geopephub.git@dev
+
+# set all env vars 
+
+# run:
+geopephub auto-download --destination /project/shefflab/brickyard/datasets_downloaded/pephub/geo
+
+```
