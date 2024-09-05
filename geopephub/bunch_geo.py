@@ -3,7 +3,7 @@
 import datetime
 
 import pepdbagent
-from pepdbagent.models import GeoTarModel
+from pepdbagent.models import TarNamespaceModel
 import pephubclient
 from pephubclient.helpers import save_pep, MessageHandler
 from pephubclient.files_manager import FilesManager
@@ -233,7 +233,7 @@ def auto_run(
     agent = get_agent()
     namespace = "geo"
 
-    uploaded_tars = agent.project.geo_get_tar_info(namespace="geo")
+    uploaded_tars = agent.namespace.get_tar_info(namespace=namespace)
     if uploaded_tars.count == 0:
         last_uploaded_period_date = datetime.datetime(2000, 1, 1)
     else:
@@ -259,8 +259,8 @@ def auto_run(
 
     number_of_project = agent.annotation.get(namespace=namespace, limit=2).count
     print(number_of_project)
-    agent.project.geo_upload_tar_info(
-        GeoTarModel(
+    agent.namespace.upload_tar_info(
+        TarNamespaceModel(
             namespace=namespace,
             file_path=tar_name,
             start_period=last_uploaded_period_date,
