@@ -6,7 +6,7 @@ from geopephub.metageo_pephub import (
     check_by_date as check_by_date_function,
     clean_history as clean_history_function,
 )
-from geopephub.bunch_geo import bunch_geo
+from geopephub.bunch_geo import bunch_geo, auto_run
 from geopephub.__version__ import __version__
 
 app = typer.Typer()
@@ -214,6 +214,40 @@ def download(
         compress=compress,
         force=force,
         subfolders=subfolders,
+    )
+
+
+@app.command(
+    help="Automatically download projects from geo namespace, tar them and upload to s3. Don't forget to set up AWS credentials"
+)
+def auto_download(
+    destination: str = typer.Option(
+        ...,
+        help="Output directory or s3 bucket. By default set current directory",
+    ),
+    compress: bool = typer.Option(
+        True,
+        help="zip downloaded projects, default: True",
+    ),
+    tar_all: bool = typer.Option(
+        True,
+        help="tar all the downloaded projects into a single file",
+    ),
+    upload_s3: bool = typer.Option(
+        True,
+        help="upload tar file to s3 bucket",
+    ),
+    bucket: str = typer.Option(
+        "pephub",
+        help="S3 bucket name",
+    ),
+) -> None:
+    auto_run(
+        destination=destination,
+        compress=compress,
+        tar_all=tar_all,
+        upload_s3=upload_s3,
+        bucket=bucket,
     )
 
 

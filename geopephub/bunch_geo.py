@@ -1,7 +1,9 @@
 # This script aims to provide a simple way to get a list of all the PEPs in a
 # PEPhub from GEO namespace, download them and zip into a single file.
+import datetime
 
 import pepdbagent
+from pepdbagent.models import GeoTarModel
 import pephubclient
 from pephubclient.helpers import save_pep, MessageHandler
 from pephubclient.files_manager import FilesManager
@@ -11,7 +13,7 @@ import logging
 
 from ubiquerg import parse_registry_path
 import os
-from typing import List
+from typing import List, Union
 import tempfile
 import boto3
 from botocore.exceptions import ClientError
@@ -30,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 @calculate_time
 def bunch_geo(
     namespace: str = "geo",
-    filter_by: str = "update_date",
+    filter_by: str = "last_update_date",
     start_period: str = None,
     end_period: str = None,
     limit: int = 10000,
@@ -42,7 +44,7 @@ def bunch_geo(
     force: bool = False,
     subfolders: bool = True,
     tar_all: bool = True,
-) -> None:
+) -> Union[str, None]:
     """
     Get a list of all the PEPs in a PEPhub from GEO namespace, download them and zip into a single file.
 
@@ -83,7 +85,7 @@ def bunch_geo(
         filter_end_date=end_period,
     )
 
-    if s3:
+    if s3 and s3.get("protocol") == "s3":
         process_to_s3(
             projects_list=projects_list, destination=s3.get("item"), agent=agent
         )
@@ -129,9 +131,11 @@ def bunch_geo(
 
         if tar_all:
 
-            tar_name = os.path.join(tar_folder_name, f"geo_{date_today()}")
-            tar_folder(pep_folder, tar_name)
+            tar_name = os.path.join(tar_folder_name, f"{namespace}_{date_today()}")
+            tar_name = tar_folder(pep_folder, tar_name)
             _LOGGER.info(f"Projects were tarred into {tar_name}")
+            return tar_name
+        return None
 
 
 def process_to_s3(
@@ -176,7 +180,7 @@ def process_to_s3(
                     FilesManager.delete_file_if_exists(file_path)
 
 
-def upload_to_s3_file(file_name: str, bucket: str, object_name: str = None):
+def upload_to_s3_file(file_name: str, bucket: str = "pephub", object_name: str = None):
     """Upload a file to an S3 bucket
     # copied from: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html
 
@@ -202,3 +206,65 @@ def upload_to_s3_file(file_name: str, bucket: str, object_name: str = None):
         return False
 
     return True
+
+
+def auto_run(
+    destination: str = None,
+    compress: bool = True,
+    tar_all: bool = True,
+    upload_s3: bool = True,
+    bucket: str = "pephub",
+) -> None:
+    """
+    Automatically download project:
+     1. Check what projects were uploaded since last uploading time.
+     2. Download them.
+     3. Tar them into a single file.
+     4. Upload to s3 bucket.
+     5. Save metadata to pephub
+
+    :param destination: Output directory.
+    :param compress: zip downloaded projects, default: True
+    :param tar_all: tar all the downloaded projects into a single file
+    :param upload_s3: upload to s3 bucket
+    :param bucket: s3 bucket name
+    """
+
+    agent = get_agent()
+    namespace = "geo"
+
+    uploaded_tars = agent.project.geo_get_tar_info(namespace="geo")
+    if uploaded_tars.count == 0:
+        last_uploaded_period_date = datetime.datetime(2000, 1, 1)
+    else:
+        last_uploaded_period_date = uploaded_tars.results[0].end_period
+    last_uploaded_period_str = last_uploaded_period_date.strftime("%Y/%m/%d")
+
+    today_string_str = date_today(separator="/")
+
+    tar_name = bunch_geo(
+        start_period=last_uploaded_period_str,
+        end_period=today_string_str,
+        destination=destination,
+        compress=compress,
+        tar_all=tar_all,
+    )
+
+    if upload_s3:
+        upload_to_s3_file(
+            file_name=os.path.abspath(tar_name),
+            bucket=bucket,
+            object_name=os.path.basename(tar_name),
+        )
+
+    number_of_project = agent.annotation.get(namespace=namespace, limit=2).count
+    print(number_of_project)
+    agent.project.geo_upload_tar_info(
+        GeoTarModel(
+            namespace=namespace,
+            file_path=tar_name,
+            start_period=last_uploaded_period_date,
+            end_period=datetime.datetime.now(),
+            number_of_projects=number_of_project,
+        )
+    )

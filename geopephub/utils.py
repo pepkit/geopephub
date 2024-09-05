@@ -174,12 +174,12 @@ def create_gse_sub_name(name: str) -> str:
         return name[:6] + "n" * (len_name - 6)
 
 
-def tar_folder(folder_path: str, tar_name: str) -> None:
+def tar_folder(folder_path: str, tar_name: str) -> str:
     """Tar a folder
 
     :param folder_path: Folder to tar
     :param tar_name: Name of the tar file
-    :return: None
+    :return: file name of the tar file
     """
     # tar_type = "w:gz"
     tar_type = "w"
@@ -187,14 +187,17 @@ def tar_folder(folder_path: str, tar_name: str) -> None:
 
     with tarfile.open(tar_name, tar_type) as tar:
         tar.add(folder_path, arcname=os.path.basename(folder_path))
-    return None
+    return tar_name
 
 
-def date_today():
+def date_today(separator: str = "_") -> str:
     """
     Get today's date in the format 'YYYY_MM_DD'
+
+    :param separator: separator for the date
+
     :return: str
     """
 
     today_date = datetime.datetime.today()
-    return today_date.strftime("%Y_%m_%d")
+    return today_date.strftime(f"%Y{separator}%m{separator}%d")
