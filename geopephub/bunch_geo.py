@@ -38,7 +38,7 @@ def bunch_geo(
     limit: int = 1000000,
     offset: int = 0,
     destination: str = None,
-    order_by: str = "last_update_date",
+    order_by: str = "update_date",
     query: str = None,
     compress: bool = True,
     force: bool = False,
@@ -115,7 +115,7 @@ def bunch_geo(
             )
             if subfolders:
                 new_destination = os.path.join(
-                    pep_folder, create_gse_sub_name(geo.name)
+                    pep_folder, create_gse_sub_name(namespace)
                 )
                 os.makedirs(new_destination, exist_ok=True)
 
@@ -211,6 +211,7 @@ def upload_to_s3_file(file_name: str, bucket: str = "pephub", object_name: str =
 @calculate_time
 def auto_run(
     destination: str = None,
+    namespace: str = "geo",
     compress: bool = True,
     tar_all: bool = True,
     upload_s3: bool = True,
@@ -225,6 +226,7 @@ def auto_run(
      5. Save metadata to pephub
 
     :param destination: Output directory.
+    :param namespace: namespace ['geo']
     :param compress: zip downloaded projects, default: True
     :param tar_all: tar all the downloaded projects into a single file
     :param upload_s3: upload to s3 bucket
@@ -232,41 +234,42 @@ def auto_run(
     """
 
     agent = get_agent()
-    namespace = "geo"
+    destination = os.path.join(destination, namespace)
 
     uploaded_tars = agent.namespace.get_tar_info(namespace=namespace)
     if uploaded_tars.count == 0:
         last_uploaded_period_date = datetime.datetime(2000, 1, 1)
     else:
-        last_uploaded_period_date = uploaded_tars.results[0].end_period
+        last_uploaded_period_date = uploaded_tars.results[0].creation_date
     last_uploaded_period_str = last_uploaded_period_date.strftime("%Y/%m/%d")
 
     today_string_str = date_today(separator="/")
 
     tar_name = bunch_geo(
+        namespace=namespace,
         start_period=last_uploaded_period_str,
         end_period=today_string_str,
         destination=destination,
         compress=compress,
         tar_all=tar_all,
         limit=1000000,
+        subfolders=True if namespace in ["geo", "bedbase"] else False,
     )
 
+    base_name = os.path.join(namespace, os.path.basename(tar_name))
     if upload_s3:
         upload_to_s3_file(
             file_name=os.path.abspath(tar_name),
             bucket=bucket,
-            object_name=os.path.basename(tar_name),
+            object_name=base_name,
         )
 
     number_of_project = agent.annotation.get(namespace=namespace, limit=2).count
-    print(number_of_project)
     agent.namespace.upload_tar_info(
         TarNamespaceModel(
             namespace=namespace,
-            file_path=tar_name,
-            start_period=last_uploaded_period_date,
-            end_period=datetime.datetime.now(),
+            file_path=base_name,
             number_of_projects=number_of_project,
         )
     )
+    _LOGGER.info(f"Metadata was uploaded successfully. Exiting...")

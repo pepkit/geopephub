@@ -97,7 +97,7 @@ graph TD
 
 How to run it on rivanna: 
 ```bash
-install geopephub from dev branch
+# install geopephub from dev branch
 pip install git+https://github.com/pepkit/geopephub.git@dev
 
 # set all env vars 

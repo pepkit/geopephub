@@ -1,4 +1,6 @@
 import typer
+from pandas.conftest import names
+
 from geopephub.metageo_pephub import (
     add_to_queue,
     upload_queued_projects,
@@ -221,6 +223,10 @@ def download(
     help="Automatically download projects from geo namespace, tar them and upload to s3. Don't forget to set up AWS credentials"
 )
 def auto_download(
+    namespace: str = typer.Option(
+        "geo",
+        help="Namespace of the projects that have to be downloaded. Default: geo",
+    ),
     destination: str = typer.Option(
         ...,
         help="Output directory or s3 bucket. By default set current directory",
@@ -243,6 +249,7 @@ def auto_download(
     ),
 ) -> None:
     auto_run(
+        namespace=namespace,
         destination=destination,
         compress=compress,
         tar_all=tar_all,
