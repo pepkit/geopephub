@@ -208,6 +208,7 @@ def upload_to_s3_file(file_name: str, bucket: str = "pephub", object_name: str =
     return True
 
 
+@calculate_time
 def auto_run(
     destination: str = None,
     compress: bool = True,

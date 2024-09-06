@@ -159,7 +159,7 @@ def create_gse_sub_name(name: str) -> str:
     Create gse subfolder name. e.g.
         gse123456 -> gse123nnn
         gse123 -> gsennn
-        gse1234-> gse123n
+        gse1234-> gse1nnn
         gse1 -> gsennn
 
     :param name: gse name
@@ -171,7 +171,8 @@ def create_gse_sub_name(name: str) -> str:
     if len_name <= 6:
         return """gsennn"""
     else:
-        return name[:6] + "n" * (len_name - 6)
+        # return name[:6] + "n" * (len_name - 6)
+        return name[:-3] + "n" * 3
 
 
 def tar_folder(folder_path: str, tar_name: str) -> str:
