@@ -263,13 +263,14 @@ def auto_run(
             bucket=bucket,
             object_name=base_name,
         )
-
+    file_size = os.stat(os.path.abspath(tar_name)).st_size
     number_of_project = agent.annotation.get(namespace=namespace, limit=2).count
     agent.namespace.upload_tar_info(
         TarNamespaceModel(
             namespace=namespace,
             file_path=base_name,
             number_of_projects=number_of_project,
+            file_size=file_size,
         )
     )
     _LOGGER.info(f"Metadata was uploaded successfully. Exiting...")
