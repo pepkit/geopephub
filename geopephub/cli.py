@@ -277,6 +277,16 @@ def version_callback(value: bool):
         raise typer.Exit()
 
 
+@app.command()
+def bedbase_stats():
+    """
+    Add bedbase stats to the database (each sample independently to the table)
+    """
+    from geopephub.bedbase_stats import main
+
+    main()
+
+
 @app.callback()
 def common(
     ctx: typer.Context,
