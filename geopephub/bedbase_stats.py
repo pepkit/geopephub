@@ -35,7 +35,7 @@ def main():
                             gse=sample.gse.lower(),
                             gsm=sample.sample_geo_accession.lower(),
                             sample_name=sample.sample_name,
-                            genome=sample.get("ref_genome", ""),
+                            genome=sample.get("ref_genome", "").strip(),
                             last_update_date=sample.sample_submission_date,
                             submission_date=sample.sample_submission_date,
                         )
