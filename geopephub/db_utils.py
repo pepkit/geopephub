@@ -300,7 +300,7 @@ class BaseEngine:
         """
         Get total number of samples that were uploaded successfully
         :param cycle_id: cycle_id
-        :return: number of sucesses
+        :return: number of successes
         """
         with Session(self._engine) as session:
             _LOGGER.info("Getting number of successes")

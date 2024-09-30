@@ -1,11 +1,14 @@
 import typer
+from pandas.conftest import names
+
 from geopephub.metageo_pephub import (
     add_to_queue,
     upload_queued_projects,
     run_upload_checker,
     check_by_date as check_by_date_function,
+    clean_history as clean_history_function,
 )
-from geopephub.bunch_geo import bunch_geo
+from geopephub.bunch_geo import bunch_geo, auto_run
 from geopephub.__version__ import __version__
 
 app = typer.Typer()
@@ -185,11 +188,21 @@ def download(
         False,
         help="force rewrite project if it exists, default: False",
     ),
+    subfolders: bool = typer.Option(
+        True,
+        help="Create subfolder hierarchy based on GEO accession number, default: True",
+    ),
 ):
     """
     Download projects from the particular namespace.
     You can filter projects, order them, and download only part of them.
     """
+
+    if namespace.lower() == "geo":
+        subfolders = subfolders
+    else:
+        subfolders = False
+
     bunch_geo(
         namespace=namespace,
         filter_by=filter_by,
@@ -202,13 +215,76 @@ def download(
         query=query,
         compress=compress,
         force=force,
+        subfolders=subfolders,
     )
+
+
+@app.command(
+    help="Automatically download projects from chosen namespace, tar them and upload to s3 (if needed). Don't forget to set up AWS credentials"
+)
+def auto_download(
+    namespace: str = typer.Option(
+        "geo",
+        help="Namespace of the projects that have to be downloaded. Default: geo",
+    ),
+    destination: str = typer.Option(
+        ...,
+        help="Output directory or s3 bucket. By default set current directory",
+    ),
+    compress: bool = typer.Option(
+        True,
+        help="Zip each downloaded project, default: True",
+    ),
+    tar_all: bool = typer.Option(
+        True,
+        help="tar all the downloaded projects into a single file",
+    ),
+    upload_s3: bool = typer.Option(
+        True,
+        help="upload tar file to s3 bucket",
+    ),
+    bucket: str = typer.Option(
+        "pephub",
+        help="S3 bucket name",
+    ),
+) -> None:
+    auto_run(
+        namespace=namespace,
+        destination=destination,
+        compress=compress,
+        tar_all=tar_all,
+        upload_s3=upload_s3,
+        bucket=bucket,
+    )
+
+
+@app.command()
+def clean_history(
+    days: int = typer.Option(
+        90,
+        help="Number of days to keep in the history. Default: 90",
+    ),
+):
+    """
+    Clean history of the pephub
+    """
+    clean_history_function(days=days)
 
 
 def version_callback(value: bool):
     if value:
         typer.echo(f"geopephub version: {__version__}")
         raise typer.Exit()
+
+
+@app.command()
+def bedbase_stats():
+    """
+    Add bedbase stats to the database (each sample independently to the table)
+    """
+    from geopephub.bedbase_stats import main
+
+    main()
 
 
 @app.callback()

@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 from functools import wraps
 import logging
+import tarfile
 import datetime
 
 from geopephub.const import (
@@ -151,3 +152,53 @@ def get_base_db_engine() -> BaseEngine:
         database=os.environ.get("POSTGRES_DB") or DEFAULT_POSTGRES_DB,
         port=os.environ.get("POSTGRES_PORT") or DEFAULT_POSTGRES_PORT,
     )
+
+
+def create_gse_sub_name(name: str) -> str:
+    """
+    Create gse subfolder name. e.g.
+        gse123456 -> gse123nnn
+        gse123 -> gsennn
+        gse1234-> gse1nnn
+        gse1 -> gsennn
+
+    :param name: gse name
+    :return: gse subfolder name
+    """
+
+    len_name = len(name)
+
+    if len_name <= 6:
+        return """gsennn"""
+    else:
+        # return name[:6] + "n" * (len_name - 6)
+        return name[:-3] + "n" * 3
+
+
+def tar_folder(folder_path: str, tar_name: str) -> str:
+    """Tar a folder
+
+    :param folder_path: Folder to tar
+    :param tar_name: Name of the tar file
+    :return: file name of the tar file
+    """
+    # tar_type = "w:gz"
+    tar_type = "w"
+    tar_name = f"{tar_name}.tar"
+
+    with tarfile.open(tar_name, tar_type) as tar:
+        tar.add(folder_path, arcname=os.path.basename(folder_path))
+    return tar_name
+
+
+def date_today(separator: str = "_") -> str:
+    """
+    Get today's date in the format 'YYYY_MM_DD'
+
+    :param separator: separator for the date
+
+    :return: str
+    """
+
+    today_date = datetime.datetime.today()
+    return today_date.strftime(f"%Y{separator}%m{separator}%d")

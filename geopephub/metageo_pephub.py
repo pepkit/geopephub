@@ -140,7 +140,7 @@ def upload_queued_projects(
     list_of_cycles = status_db_connection.get_queued_cycle(target=target)
 
     if not list_of_cycles:
-        _LOGGER.info("No queued cycles found. Quiting..")
+        _LOGGER.info("No queued cycles found. Quitting..")
 
     for this_cycle in list_of_cycles:
         this_cycle.status = "processing"
@@ -392,6 +392,18 @@ def check_by_date(
             target=target,
             tag=tag,
         )
+
+
+def clean_history(days: int = 90) -> None:
+    """
+    Delete histrory of project changes in pephub database
+
+    :param days: number of days to keep in history
+    :return: NoReturn
+    """
+
+    agent = get_agent()
+    agent.project.clean_history(days=days)
 
 
 class CycleSuccessException(Exception):
