@@ -220,7 +220,7 @@ def download(
 
 
 @app.command(
-    help="Automatically download projects from geo namespace, tar them and upload to s3. Don't forget to set up AWS credentials"
+    help="Automatically download projects from chosen namespace, tar them and upload to s3 (if needed). Don't forget to set up AWS credentials"
 )
 def auto_download(
     namespace: str = typer.Option(
@@ -233,7 +233,7 @@ def auto_download(
     ),
     compress: bool = typer.Option(
         True,
-        help="zip downloaded projects, default: True",
+        help="Zip each downloaded project, default: True",
     ),
     tar_all: bool = typer.Option(
         True,
