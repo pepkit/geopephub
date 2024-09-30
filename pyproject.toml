@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "geopephub"
-version = "0.0.5"
+version = "0.1.0"
 description = "Pipeline for processing GEO data and uploading it to the PEPHub"
 authors = ["Oleksandr Khoroshevskyi <khorosh@virginia.edu>"]
 readme = "README.md"
@@ -23,13 +23,13 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-geofetch = "^0.12.5"
-#pepdbagent= "^0.11.1"
-pepdbagent= { git = "https://github.com/pepkit/pepdbagent.git", branch = "dev" }
+geofetch = "^0.12.7"
+pepdbagent= "^0.11.1"
+#pepdbagent= { git = "https://github.com/pepkit/pepdbagent.git", branch = "dev" }
 SQLAlchemy = ">=2.0.0,<2.1.0"
 logmuse= "^0.2.7"
 coloredlogs= "^15.0.1"
-peppy= "^0.40.1"
+peppy= "^0.40.7"
 pephubclient= "^0.4.4"
 #pephubclient= { git = "https://github.com/pepkit/pephubclient.git", branch = "dev" }
 pydantic= "^2.5.0"
