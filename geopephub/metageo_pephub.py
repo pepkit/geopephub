@@ -11,7 +11,7 @@ from datetime import timedelta
 
 import peppy
 
-from geopephub.const import LAST_UPDATE_DATES
+from geopephub.const import LAST_UPDATE_DATES, BEDBASE_MAX_SIZE
 from geopephub.utils import get_agent, get_base_db_engine
 from geopephub.models import StatusModel, CycleModel
 from geopephub.utils import run_geofetch, add_link_to_description
@@ -191,7 +191,7 @@ def _upload_gse_project(
     if target == "bedbase":
         geofetcher_obj = geofetch.Geofetcher(
             filter="\.(bed|bigBed|narrowPeak|broadPeak)\.",
-            filter_size="25MB",
+            filter_size=BEDBASE_MAX_SIZE,
             data_source="samples",
             processed=True,
         )

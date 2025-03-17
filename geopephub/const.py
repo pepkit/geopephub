@@ -22,3 +22,5 @@ DEFAULT_POSTGRES_PORT = 5432
 
 # db_dialects
 POSTGRES_DIALECT = "postgresql+psycopg"
+
+BEDBASE_MAX_SIZE = "500MB"
