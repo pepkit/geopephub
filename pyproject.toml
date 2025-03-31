@@ -24,7 +24,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 geofetch = "^0.12.7"
-pepdbagent= "^0.11.1"
+pepdbagent= "^0.12.2"
 #pepdbagent= { git = "https://github.com/pepkit/pepdbagent.git", branch = "dev" }
 SQLAlchemy = ">=2.0.0,<2.1.0"
 logmuse= "^0.2.7"
