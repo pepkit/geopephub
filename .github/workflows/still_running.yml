@@ -16,7 +16,7 @@ jobs:
         python-version: "3.13"
     - name: Update stats
       run: |
-        python3 -m pip install -r requirements.txt
+        python3 -m pip install -r requirements_keep_running.txt
         pwd
         python3 keep_running.py
     - name: Commit report
