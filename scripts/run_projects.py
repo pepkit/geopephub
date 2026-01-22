@@ -25,8 +25,8 @@ def run_queuer():
     # )
     check_by_date(
         target="bedbase",
-        start_period="2021/09/22",
-        end_period="2021/09/25",
+        start_period="2026/01/20",
+        end_period="2026/01/22",
         tag="projects",
     )
 
