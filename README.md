@@ -4,6 +4,14 @@
 This repository contains `geopephub` CLI, that enables to automatic upload GEO projects to PEPhub based on date and scheduled automatic uploading using GitHub actions. 
 Additionally, the CLI includes a download command, enabling users to retrieve projects from specified namespace directly from the PEPhub database. This feature is particularly helpful for downloading all GEO projects at once.
 
+## Supported Targets
+
+The pipeline supports three targets:
+
+- **geo**: All GEO projects (default behavior, no filtering)
+- **bedbase**: BED file projects - filters GEO for BED, narrowPeak, and broadPeak files, uploads to the `bedbase` namespace
+- **accbase**: Chromatin accessibility projects - filters GEO for ATAC-seq, scATAC-seq, and DNase-seq assays, uploads to the `accbase` namespace
+
 ## Installation
 To install `geopephub` use this command: 
 ```
