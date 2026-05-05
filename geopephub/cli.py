@@ -15,10 +15,10 @@ app = typer.Typer()
 
 
 def validate_target(value: str):
-    valid_target = ["geo", "bedbase"]
+    valid_target = ["geo", "bedbase", "accbase"]
     if value.lower() not in valid_target:
         raise typer.BadParameter(
-            f"Invalid color '{value}'. Choose from: {', '.join(valid_target)}"
+            f"Invalid target '{value}'. Choose from: {', '.join(valid_target)}"
         )
     return value.lower()
 
