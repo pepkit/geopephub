@@ -195,7 +195,7 @@ def _upload_gse_project(
     """
     if target == "bedbase":
         geofetcher_obj = geofetch.Geofetcher(
-            filter="\.(bed|bigBed|narrowPeak|broadPeak)\.",
+            filter=r"\.(bed|bigBed|narrowPeak|broadPeak)\.",
             filter_size=BEDBASE_MAX_SIZE,
             data_source="all",
             processed=True,
