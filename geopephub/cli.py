@@ -291,7 +291,7 @@ def bedbase_stats():
 def common(
     ctx: typer.Context,
     version: bool = typer.Option(
-        None, "--version", "-v", callback=version_callback, help="App version"
+        False, "--version", "-v", callback=version_callback, is_eager=True, help="App version"
     ),
 ):
     pass
