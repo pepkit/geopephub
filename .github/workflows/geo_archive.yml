@@ -4,14 +4,13 @@ name: Publish namespace archive
 # from S3, applying the update delta, and republishing. Stateless: nothing
 # persists between runs except the tar in the bucket.
 #
-# Dispatch-only for now. The schedule below stays commented until a dispatch run
-# has published a real archive; add it in a separate commit at that point.
-#
-#  schedule:
-#    # quarterly, 04:00 on the 1st of Jan/Apr/Jul/Oct
-#    - cron: '0 4 1 1,4,7,10 *'
 
 on:
+  schedule:
+    # Quarterly, 14:00 UTC on the 1st of Jan/Apr/Jul/Oct. Late enough in the day
+    # that the daily queuer (10:00) and the checkers (11:40-13:35) have already
+    # brought PEPhub current, so the snapshot includes that morning's additions.
+    - cron: '0 14 1 1,4,7,10 *'
   workflow_dispatch:
     inputs:
       namespace:
@@ -67,14 +66,28 @@ jobs:
 
       - name: Build and publish archive
         run: |
-          geopephub archive-update \
-            --namespace "${{ inputs.namespace }}" \
-            --workdir "${{ runner.temp }}/archive" \
-            --workers "${{ inputs.workers }}" \
-            --fail-threshold "${{ inputs.fail_threshold }}" \
-            ${{ inputs.start_period != '' && format('--start-period {0}', inputs.start_period) || '' }} \
-            ${{ inputs.register && '--register' || '--no-register' }}
+          ARGS=(
+            --namespace "$NAMESPACE"
+            --workdir "$RUNNER_TEMP/archive"
+            --workers "$WORKERS"
+            --fail-threshold "$FAIL_THRESHOLD"
+          )
+          [ -n "$START_PERIOD" ] && ARGS+=(--start-period "$START_PERIOD")
+          if [ "$REGISTER" = "true" ]; then
+            ARGS+=(--register)
+          else
+            ARGS+=(--no-register)
+          fi
+          geopephub archive-update "${ARGS[@]}"
         env:
+          # On a scheduled run the inputs context is empty, so every value needs
+          # a fallback. Without them the job would run with a blank namespace and,
+          # worse, silently skip publishing.
+          NAMESPACE: ${{ inputs.namespace || 'geo' }}
+          START_PERIOD: ${{ inputs.start_period }}
+          WORKERS: ${{ inputs.workers || '4' }}
+          FAIL_THRESHOLD: ${{ inputs.fail_threshold || '0.01' }}
+          REGISTER: ${{ github.event_name == 'schedule' && 'true' || inputs.register }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
