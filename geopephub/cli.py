@@ -1,5 +1,4 @@
 import typer
-from pandas.conftest import names
 
 from geopephub.metageo_pephub import (
     add_to_queue,
@@ -9,6 +8,7 @@ from geopephub.metageo_pephub import (
     clean_history as clean_history_function,
 )
 from geopephub.bunch_geo import bunch_geo, auto_run
+from geopephub.archive import build_archive
 from geopephub.__version__ import __version__
 
 app = typer.Typer()
@@ -255,6 +255,53 @@ def auto_download(
         tar_all=tar_all,
         upload_s3=upload_s3,
         bucket=bucket,
+    )
+
+
+@app.command(
+    help="Produce a dated full-namespace archive without persistent state: download the "
+    "last published archive, apply the update delta, re-tar, and publish. Intended for "
+    "unattended CI runs. Use auto-download instead when the destination survives between runs."
+)
+def archive_update(
+    namespace: str = typer.Option(
+        "geo",
+        help="Namespace to archive",
+    ),
+    workdir: str = typer.Option(
+        ...,
+        help="Scratch directory. Needs ~5GB free for the geo namespace",
+    ),
+    start_period: str = typer.Option(
+        None,
+        help="Override the delta start ['2024/09/06']. Defaults to the previous "
+        "archive's creation date. Widen it to re-pull projects earlier runs skipped",
+    ),
+    workers: int = typer.Option(
+        4,
+        help="Concurrent project fetches",
+    ),
+    register: bool = typer.Option(
+        True,
+        help="Upload to S3 and write the archive row. Set False for a dry run",
+    ),
+    bucket: str = typer.Option(
+        "pephub",
+        help="S3 bucket name",
+    ),
+    fail_threshold: float = typer.Option(
+        0.01,
+        help="Abort without publishing if this fraction of fetches fail",
+    ),
+) -> None:
+    build_archive(
+        namespace=namespace,
+        workdir=workdir,
+        start_period=start_period,
+        workers=workers,
+        register=register,
+        bucket=bucket,
+        fail_threshold=fail_threshold,
     )
 
 
