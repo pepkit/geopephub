@@ -11,7 +11,7 @@ from datetime import timedelta
 
 import peppy
 
-from geopephub.const import LAST_UPDATE_DATES
+from geopephub.const import LAST_UPDATE_DATES, BEDBASE_MAX_SIZE, ACCBASE_FINDER_FILTER, ACCBASE_MAX_SIZE
 from geopephub.utils import get_agent, get_base_db_engine
 from geopephub.models import StatusModel, CycleModel
 from geopephub.utils import run_geofetch, add_link_to_description
@@ -58,6 +58,11 @@ def add_to_queue_by_period(
         # get projects only with this filter
         gse_list = geofetch.Finder(
             filters="((bed) OR narrowPeak) OR broadPeak"
+        ).get_gse_by_date(start_date_str, today_date_str)
+    elif target == "accbase":
+        # get chromatin accessibility projects (ATAC-seq, scATAC-seq, DNase-seq)
+        gse_list = geofetch.Finder(
+            filters=ACCBASE_FINDER_FILTER
         ).get_gse_by_date(start_date_str, today_date_str)
     elif target == "geo":
         gse_list = geofetch.Finder().get_gse_by_date(start_date_str, today_date_str)
@@ -191,8 +196,16 @@ def _upload_gse_project(
     if target == "bedbase":
         geofetcher_obj = geofetch.Geofetcher(
             filter=r"\.(bed|bigBed|narrowPeak|broadPeak)\.",
-            filter_size="25MB",
-            data_source="samples",
+            filter_size=BEDBASE_MAX_SIZE,
+            data_source="all",
+            processed=True,
+        )
+    elif target == "accbase":
+        # For accbase, we want all files from ATAC-seq/DNase-seq projects
+        # No file extension filter - we filter by assay type in the Finder
+        geofetcher_obj = geofetch.Geofetcher(
+            filter_size=ACCBASE_MAX_SIZE,
+            data_source="all",
             processed=True,
         )
     else:
@@ -254,6 +267,8 @@ def _upload_gse_project(
             gse_log.status_info = "pepdbagent"
             if target == "bedbase":
                 tag = pep_tag
+            elif target == "accbase":
+                tag = pep_tag
             else:
                 tag = "default"
             try:
@@ -264,7 +279,7 @@ def _upload_gse_project(
                     tag=tag,
                     overwrite=True,
                     description=project_dict[prj_name].description,
-                    pep_schema="pep/2.1.0",
+                    pep_schema=None,
                 )
                 gse_log.status = "success"
                 gse_log.info = ""

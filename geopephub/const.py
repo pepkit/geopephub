@@ -22,3 +22,9 @@ DEFAULT_POSTGRES_PORT = 5432
 
 # db_dialects
 POSTGRES_DIALECT = "postgresql+psycopg"
+
+BEDBASE_MAX_SIZE = "500MB"
+
+# Accbase specific constants
+ACCBASE_FINDER_FILTER = "((ATAC-seq) OR (scATAC-seq) OR (DNase-seq))"
+ACCBASE_MAX_SIZE = "1GB"
