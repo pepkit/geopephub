@@ -349,13 +349,4 @@ def common(
 ):
     # This callback runs before any command, so it is where logging gets
     # configured. Don't move this into `__init__.py`.
-    logmuse.init_logger(
-        "geopephub",
-        verbosity=verbosity,
-        devmode=logdev,
-        silent=silent,
-        # Keep the "[INFO] [12:48:37] msg" format the scheduled workflows have
-        # always logged in. An explicit fmt overrides devmode, so skip it there.
-        fmt=None if logdev else "[%(levelname)s] [%(asctime)s] %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    logmuse.init_logger("geopephub", verbosity=verbosity, devmode=logdev, silent=silent)
