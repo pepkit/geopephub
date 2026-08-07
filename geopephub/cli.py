@@ -1,3 +1,4 @@
+import logmuse
 import typer
 
 from geopephub.metageo_pephub import (
@@ -340,5 +341,12 @@ def common(
     version: bool = typer.Option(
         False, "--version", "-v", callback=version_callback, is_eager=True, help="App version"
     ),
+    verbosity: int = typer.Option(
+        None, "--verbosity", help="Set logging level: 1 (CRITICAL) to 5 (DEBUG)"
+    ),
+    logdev: bool = typer.Option(False, "--logdev", help="Use developer logging format"),
+    silent: bool = typer.Option(False, "--silent", help="Silence logging"),
 ):
-    pass
+    # This callback runs before any command, so it is where logging gets
+    # configured. Don't move this into `__init__.py`.
+    logmuse.init_logger("geopephub", verbosity=verbosity, devmode=logdev, silent=silent)
