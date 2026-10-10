@@ -82,7 +82,7 @@ def timeout(seconds_before_timeout=60):
                 if old_time_left > 0:  # deduct f's run time from the saved timer
                     old_time_left -= time.time() - start_time
                 signal.signal(signal.SIGALRM, old)
-                signal.alarm(old_time_left)
+                signal.setitimer(signal.ITIMER_REAL, max(0, old_time_left))
             return result
 
         return new_f
