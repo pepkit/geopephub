@@ -107,6 +107,7 @@ jobs:
         uses: databio/actions/codon-notify@master
         with:
           api-key: ${{ secrets.CODON_API_KEY }}
+          url: ${{ secrets.CODON_NOTIFY_URL }}
           status: ${{ job.status }}
           message: PEPhub ${{ inputs.namespace || 'geo' }} archive
           details: "${{ github.event_name }} run, register=${{ github.event_name == 'schedule' && 'true' || inputs.register }}"
