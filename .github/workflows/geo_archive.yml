@@ -100,3 +100,13 @@ jobs:
       - name: Disk after
         if: always()
         run: df -h ${{ runner.temp }} /
+
+      - name: Notify Codon
+        # Runs quarterly, so report every outcome. A missing message means the job never ran.
+        if: always()
+        uses: databio/actions/codon-notify@master
+        with:
+          api-key: ${{ secrets.CODON_API_KEY }}
+          status: ${{ job.status }}
+          message: PEPhub ${{ inputs.namespace || 'geo' }} archive
+          details: "${{ github.event_name }} run, register=${{ github.event_name == 'schedule' && 'true' || inputs.register }}"
