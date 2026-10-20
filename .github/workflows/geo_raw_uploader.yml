@@ -2,7 +2,7 @@ name: Queue and upload GEO projects
 
 on:
   schedule:
-    # run every monday at 00:05
+    # run daily at 10:00 UTC
     - cron: '0 10 * * *'
   workflow_dispatch:
     inputs: null
