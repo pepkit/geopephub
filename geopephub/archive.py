@@ -13,6 +13,7 @@ import shutil
 import tarfile
 from typing import Optional, Tuple
 
+import boto3
 import pepdbagent
 from pepdbagent.models import TarNamespaceModel
 from pephubclient.helpers import save_pep
@@ -352,13 +353,24 @@ def build_archive(
     from geopephub.bunch_geo import upload_to_s3_file
 
     object_name = f"{namespace}/{os.path.basename(tar_path)}"
+    file_size = os.stat(os.path.abspath(tar_path)).st_size
     upload_to_s3_file(file_name=os.path.abspath(tar_path), bucket=bucket, object_name=object_name)
+
+    # Confirm the object landed before registering it; a row without an object
+    # is a dead link on the PEPhub archive page.
+    remote_size = boto3.client("s3").head_object(Bucket=bucket, Key=object_name)["ContentLength"]
+    if remote_size != file_size:
+        raise RuntimeError(
+            f"s3://{bucket}/{object_name} is {remote_size} bytes, expected {file_size}. "
+            f"Not registering."
+        )
+
     agent.namespace.upload_tar_info(
         TarNamespaceModel(
             namespace=namespace,
             file_path=object_name,
             number_of_projects=actual,
-            file_size=os.stat(os.path.abspath(tar_path)).st_size,
+            file_size=file_size,
         )
     )
     _LOGGER.info(f"Published and registered {object_name}")

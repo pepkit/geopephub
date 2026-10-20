@@ -16,7 +16,6 @@ import os
 from typing import List, Union
 import tempfile
 import boto3
-from botocore.exceptions import ClientError
 
 from geopephub.utils import (
     get_agent,
@@ -187,7 +186,7 @@ def upload_to_s3_file(file_name: str, bucket: str = "pephub", object_name: str =
     :param file_name: File to upload
     :param bucket: Bucket to upload to
     :param object_name: S3 object name. If not specified then file_name is used
-    :return: True if file was uploaded, else False
+    :return: None. Raises on failure so callers never register a missing object.
     """
 
     # If S3 object_name was not specified, use file_name
@@ -195,17 +194,10 @@ def upload_to_s3_file(file_name: str, bucket: str = "pephub", object_name: str =
         object_name = os.path.basename(file_name)
 
     s3_client = boto3.client("s3")
-
-    try:
-        s3_client.upload_file(file_name, bucket, object_name)
-        MessageHandler.print_success(
-            f"Project was uploaded successfully to s3://{bucket}/{object_name}"
-        )
-    except ClientError as e:
-        print(e)
-        return False
-
-    return True
+    s3_client.upload_file(file_name, bucket, object_name)
+    MessageHandler.print_success(
+        f"Project was uploaded successfully to s3://{bucket}/{object_name}"
+    )
 
 
 @calculate_time

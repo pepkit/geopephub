@@ -2,10 +2,15 @@
 
 import os
 import tarfile
+from unittest import mock
 
 import pytest
+from boto3.exceptions import S3UploadFailedError
+from botocore.exceptions import ClientError
 
+from geopephub import archive
 from geopephub.archive import (
+    build_archive,
     count_projects,
     extract_archive,
     gse_shard,
@@ -226,3 +231,63 @@ class TestArchiveRoundTrip:
 
         with pytest.raises(ValueError):
             extract_archive(tar_path, str(tmp_path / "out"))
+
+
+class TestBuildArchivePublish:
+    """A failed or partial upload must stop the run before the row is written."""
+
+    @pytest.fixture
+    def agent(self, monkeypatch):
+        agent = mock.MagicMock()
+        agent.annotation.get.return_value.count = 1
+        monkeypatch.setattr(archive, "get_agent", lambda: agent)
+        monkeypatch.setattr(
+            archive, "download_previous_archive", lambda *a, **k: (None, None)
+        )
+
+        def fake_delta(agent, namespace, peps_dir, **kwargs):
+            make_pep(peps_dir, "gse100nnn", "gse100000")
+            return {"attempted": 1, "written": 1, "failed": []}
+
+        monkeypatch.setattr(archive, "sync_delta", fake_delta)
+        return agent
+
+    def run(self, tmp_path, monkeypatch, s3):
+        monkeypatch.setattr("boto3.client", lambda *a, **k: s3)
+        return build_archive(workdir=str(tmp_path / "work"), bucket="test-bucket")
+
+    @pytest.mark.parametrize(
+        "error",
+        [
+            S3UploadFailedError("Access Denied"),
+            ClientError({"Error": {"Code": "AccessDenied"}}, "PutObject"),
+        ],
+    )
+    def test_upload_failure_registers_nothing(self, tmp_path, monkeypatch, agent, error):
+        s3 = mock.MagicMock()
+        s3.upload_file.side_effect = error
+
+        with pytest.raises(type(error)):
+            self.run(tmp_path, monkeypatch, s3)
+        agent.namespace.upload_tar_info.assert_not_called()
+
+    def test_size_mismatch_registers_nothing(self, tmp_path, monkeypatch, agent):
+        s3 = mock.MagicMock()
+        s3.head_object.return_value = {"ContentLength": 0}
+
+        with pytest.raises(RuntimeError, match="Not registering"):
+            self.run(tmp_path, monkeypatch, s3)
+        agent.namespace.upload_tar_info.assert_not_called()
+
+    def test_verified_upload_registers(self, tmp_path, monkeypatch, agent):
+        s3 = mock.MagicMock()
+        s3.head_object.side_effect = lambda Bucket, Key: {
+            "ContentLength": os.stat(s3.upload_file.call_args.args[0]).st_size
+        }
+
+        tar_path = self.run(tmp_path, monkeypatch, s3)
+
+        s3.head_object.assert_called_once_with(
+            Bucket="test-bucket", Key=f"geo/{os.path.basename(tar_path)}"
+        )
+        agent.namespace.upload_tar_info.assert_called_once()
